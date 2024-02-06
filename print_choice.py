@@ -1,9 +1,8 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
 import os   
 from sklearn.metrics import mean_squared_error
-import math 
+import math
 
 num_props = 1   
 
@@ -11,33 +10,28 @@ best_models = []
 
 model_names = set()
 
+best_hidden_for_model_ws = dict()
+
+best_ws_for_model_hidden = dict()
+
 for filename_no_csv in os.listdir("train_net"):  
 
     file_data = pd.read_csv("processed/" + filename_no_csv + ".csv", index_col = False, sep = ";")  
     wave_heights = list(file_data["sla"]) 
     range_val = max(wave_heights) - min(wave_heights)
  
-    for model_name in os.listdir("train_net/" + filename_no_csv + "/models"):
-
-        if not os.path.isdir("extrapolate/" + filename_no_csv + "/models/" + model_name):
-            os.makedirs("extrapolate/" + filename_no_csv + "/models/" + model_name)
-
-        if not os.path.isdir("extrapolate/" + filename_no_csv + "/predictions/train/" + model_name):
-            os.makedirs("extrapolate/" + filename_no_csv + "/predictions/train/" + model_name) 
-
-        if not os.path.isdir("extrapolate/" + filename_no_csv + "/predictions/extrapolate/" + model_name):
-            os.makedirs("extrapolate/" + filename_no_csv + "/predictions/extrapolate/" + model_name) 
-
-        if not os.path.isdir("extrapolate/" + filename_no_csv + "/plots/" + model_name):
-            os.makedirs("extrapolate/" + filename_no_csv + "/plots/" + model_name) 
-            
-        if not os.path.isdir("extrapolate/" + filename_no_csv + "/extrapolate_plots/" + model_name):
-            os.makedirs("extrapolate/" + filename_no_csv + "/extrapolate_plots/" + model_name) 
+    for model_name in os.listdir("train_net/" + filename_no_csv + "/predictions/test"):
 
         ws_array = []
         hidden_array = []
         val_RMSE = []
 
+        for filename in os.listdir("final_train_net/" + filename_no_csv + "/predictions/test/" + model_name): 
+            
+            test_data = pd.read_csv("final_train_net/" + filename_no_csv + "/predictions/test/" + model_name + "/" + filename, index_col = False, sep = ";") 
+            test_RMSE = math.sqrt(mean_squared_error(list(test_data["actual"]), list(test_data["predicted"]))) / range_val
+            print("test", filename_no_csv, model_name, test_RMSE, filename.replace(".csv", "").split("_")[-2], filename.replace(".csv", "").split("_")[-4])
+  
         for filename in os.listdir("train_net/" + filename_no_csv + "/predictions/validate/" + model_name): 
             
             val_data = pd.read_csv("train_net/" + filename_no_csv + "/predictions/validate/" + model_name + "/" + filename, index_col = False, sep = ";")  
@@ -46,11 +40,43 @@ for filename_no_csv in os.listdir("train_net"):
             hidden_array.append(int(filename.replace(".csv", "").split("_")[-2]))
             ws_array.append(int(filename.replace(".csv", "").split("_")[-4]))
  
-        print(filename_no_csv, model_name, min(val_RMSE), hidden_array[val_RMSE.index(min(val_RMSE))], ws_array[val_RMSE.index(min(val_RMSE))])
+        print("validation", filename_no_csv, model_name, min(val_RMSE), hidden_array[val_RMSE.index(min(val_RMSE))], ws_array[val_RMSE.index(min(val_RMSE))])
 
         best_models.append((model_name, ws_array[val_RMSE.index(min(val_RMSE))], hidden_array[val_RMSE.index(min(val_RMSE))]))
 
         model_names.add(model_name)
+
+        for ws in sorted(list(set(ws_array))):
+
+            filtered_hidden = []
+            filtered_RMSE = []
+
+            for ix_hidden in range(len(ws_array)):
+
+                if ws_array[ix_hidden] == ws:
+                    filtered_hidden.append(hidden_array[ix_hidden])
+                    filtered_RMSE.append(val_RMSE[ix_hidden])
+
+            if (model_name, ws) not in best_hidden_for_model_ws:
+                best_hidden_for_model_ws[(model_name, ws)] = []
+
+            best_hidden_for_model_ws[(model_name, ws)].append(filtered_hidden[filtered_RMSE.index(min(filtered_RMSE))])
+            
+        for hidden in sorted(list(set(hidden_array))):
+
+            filtered_ws = []
+            filtered_RMSE = []
+
+            for ix_ws in range(len(hidden_array)):
+
+                if hidden_array[ix_ws] == hidden:
+                    filtered_ws.append(ws_array[ix_ws])
+                    filtered_RMSE.append(val_RMSE[ix_ws])
+
+            if (model_name, hidden) not in best_ws_for_model_hidden:
+                best_ws_for_model_hidden[(model_name, hidden)] = []
+
+            best_ws_for_model_hidden[(model_name, hidden)].append(filtered_ws[filtered_RMSE.index(min(filtered_RMSE))])
 
 for model_name in model_names:
 
@@ -70,4 +96,44 @@ for model_name in model_names:
     print(count_ws)
     print(count_hidden)
 
-    
+    plt.subplot(1, 2, 1) 
+    plt.title("Učestalost odabrane veličine prozora za " + model_name + " model")
+    plt.pie(list(count_ws.values()), labels = list(count_ws.keys()), autopct = '%1.2f%%')  
+
+    plt.subplot(1, 2, 2) 
+    plt.title("Učestalost odabranog broja skrivenih slojeva za " + model_name + " model")
+    plt.pie(list(count_hidden.values()), labels = list(count_hidden.keys()), autopct = '%1.2f%%') 
+
+    plt.show()
+    plt.close()
+
+    filtered_best_hidden_for_model_ws = dict()
+    filtered_best_ws_for_model_hidden = dict()
+
+    for val in best_hidden_for_model_ws:
+        if val[0] == model_name: 
+            filtered_best_hidden_for_model_ws[val[1]] = {hidden: best_hidden_for_model_ws[val].count(hidden) for hidden in sorted(list(set(best_hidden_for_model_ws[val])))}
+
+    for val in best_ws_for_model_hidden:
+        if val[0] == model_name: 
+            filtered_best_ws_for_model_hidden[val[1]] = {ws: best_ws_for_model_hidden[val].count(ws) for ws in sorted(list(set(best_ws_for_model_hidden[val])))}
+
+    for ws in filtered_best_hidden_for_model_ws:
+
+        print(ws, filtered_best_hidden_for_model_ws[ws])
+ 
+        plt.title("Učestalost odabranog broja skrivenih slojeva za " + model_name + " model\nza zadanu veličinu prozora " + str(ws))
+        plt.pie(list(filtered_best_hidden_for_model_ws[ws].values()), labels = list(filtered_best_hidden_for_model_ws[ws].keys()), autopct = '%1.2f%%') 
+
+        plt.show()
+        plt.close()
+
+    for hidden in filtered_best_ws_for_model_hidden:
+
+        print(hidden, filtered_best_ws_for_model_hidden[hidden])
+ 
+        plt.title("Učestalost odabrane veličine prozora za " + model_name + " model\nza zadani broj skrivenih slojeva " + str(hidden))
+        plt.pie(list(filtered_best_ws_for_model_hidden[hidden].values()), labels = list(filtered_best_ws_for_model_hidden[hidden].keys()), autopct = '%1.2f%%') 
+
+        plt.show()
+        plt.close()

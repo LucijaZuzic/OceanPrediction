@@ -1,95 +1,19 @@
-import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import os  
-from keras.models import Sequential
-from keras.layers import Dense, SimpleRNN, LSTM, GRU
 from sklearn.metrics import mean_squared_error
 import math 
+from utilities import get_XY, create_GRU, create_LSTM, create_RNN, print_predictions
 
-num_props = 1  
-
-def get_XY(dat, time_steps, num_props): 
-    X = []
-    Y = [] 
-    for i in range(len(dat)):
-        x_vals = dat[i:min(i + time_steps, len(dat))]
-        if len(x_vals) == time_steps and i + time_steps < len(dat):
-            X.append(np.array(x_vals))
-            Y.append(np.array(dat[i + time_steps]))
-    X = np.array(X)
-    Y = np.array(Y)
-    return X, Y
-
-def create_RNN(hidden_units, dense_units, input_shape, act_layer = "linear"):
-    model = Sequential()
-    model.add(SimpleRNN(hidden_units, input_shape = input_shape, activation = act_layer))
-    model.add(Dense(units = dense_units, activation = act_layer))
-    model.compile(loss = 'mean_squared_error', optimizer = 'adam')
-    return model
-
-def create_GRU(hidden_units, dense_units, input_shape, act_layer = "linear"):
-    model = Sequential()
-    model.add(GRU(hidden_units, input_shape = input_shape, activation = act_layer))
-    model.add(Dense(units = dense_units, activation = act_layer))
-    model.compile(loss = 'mean_squared_error', optimizer = 'adam')
-    return model
-
-def create_LSTM(hidden_units, dense_units, input_shape, act_layer = "linear"):
-    model = Sequential()
-    model.add(LSTM(hidden_units, input_shape = input_shape, activation = act_layer))
-    model.add(Dense(units = dense_units, activation = act_layer))
-    model.compile(loss = 'mean_squared_error', optimizer = 'adam')
-    return model
- 
-def print_error(trainY, testY, train_predict, test_predict, title, range_val):  
-    train_RMSE = math.sqrt(mean_squared_error(trainY, train_predict)) 
-    test_RMSE = math.sqrt(mean_squared_error(testY, test_predict)) 
-    print(title, 'Normalizirani RMSE (treniranje): %.6f RMSE' % (train_RMSE / range_val)) 
-    print(title, 'Normalizirani RMSE (testiranje): %.6f RMSE' % (test_RMSE / range_val))   
-    return train_RMSE, test_RMSE
- 
-def plot_result(trainY, testY, train_predict, test_predict, title, datetimes, filename):
-    actual = np.append(trainY, testY)  
-    predictions = np.append(train_predict, test_predict) 
-    rows = len(actual)
-    plt.figure(figsize = (15, 6), dpi = 80)
-    plt.plot(range(rows), actual, color = "b") 
-    plt.plot(range(rows), predictions, color = "orange") 
-    datetimes_new = datetimes[-len(predictions):]
-    datetimes_ix_filter = [i for i in range(0, len(datetimes_new), int(len(datetimes_new) // 10))]
-    datetimes_filter = [datetimes_new[i] for i in datetimes_ix_filter]
-    plt.xticks(datetimes_ix_filter, datetimes_filter)
-    plt.axvline(x = len(trainY), color = 'r')
-    plt.text(len(trainY) / 2, min(min(actual), min(predictions)), "Treniranje") 
-    plt.text((len(trainY) + len(trainY) + len(testY)) / 2, min(min(actual), min(predictions)), "Testiranje", color = "r")  
-    plt.legend(['Stvarno', 'Predviđeno'])
-    plt.xlabel('Datum')
-    plt.ylabel("Visina površine mora (m)")
-    plt.title(title) 
-    plt.savefig(filename, bbox_inches = "tight")
-    plt.close()
-
-def print_predictions(actual, predicted, name_file):
-    
-    strpr = "actual;predicted\n"
-
-    for ix in range(len(actual)):
-
-        strpr += str(actual[ix]) + ";" + str(predicted[ix]) + "\n"
-
-    file_processed = open(name_file, "w")
-    file_processed.write(strpr.replace("[", "").replace("]", ""))
-    file_processed.close()
+num_props = 1
 
 for filename_no_csv in os.listdir("train_net"):  
 
-    file_data = pd.read_csv("processed/" + filename_no_csv + ".csv", index_col = False, sep = ";") 
-    datetimes = list(file_data["date"]) 
+    file_data = pd.read_csv("processed/" + filename_no_csv + ".csv", index_col = False, sep = ";")  
     wave_heights = list(file_data["sla"]) 
     range_val = max(wave_heights) - min(wave_heights)
 
-    for model_name in os.listdir("train_net/" + filename_no_csv + "/models"):
+    for model_name in os.listdir("train_net/" + filename_no_csv + "/predictions/test"):
 
         if not os.path.isdir("final_train_net/" + filename_no_csv + "/models/" + model_name):
             os.makedirs("final_train_net/" + filename_no_csv + "/models/" + model_name)
@@ -98,10 +22,7 @@ for filename_no_csv in os.listdir("train_net"):
             os.makedirs("final_train_net/" + filename_no_csv + "/predictions/train/" + model_name)
 
         if not os.path.isdir("final_train_net/" + filename_no_csv + "/predictions/test/" + model_name):
-            os.makedirs("final_train_net/" + filename_no_csv + "/predictions/test/" + model_name) 
-
-        if not os.path.isdir("final_train_net/" + filename_no_csv + "/plots/" + model_name):
-            os.makedirs("final_train_net/" + filename_no_csv + "/plots/" + model_name) 
+            os.makedirs("final_train_net/" + filename_no_csv + "/predictions/test/" + model_name)
 
         ws_array = []
         hidden_array = []
@@ -144,7 +65,4 @@ for filename_no_csv in os.listdir("train_net"):
         predict_test = demo_model.predict(xtest) 
 
         print_predictions(ytrain, predict_train, "final_train_net/" + filename_no_csv + "/predictions/train/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + "_train.csv") 
-        print_predictions(ytest, predict_test, "final_train_net/" + filename_no_csv + "/predictions/test/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + "_test.csv") 
-  
-        plot_result(ytrain, ytest, predict_train, predict_test, "Visina površine mora predviđena " + model_name + " modelom (veličina prozora " + str(ws) + ", " + str(hidden) + " skrivenih slojeva)", datetimes, "final_train_net/" + filename_no_csv + "/plots/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + ".png")
-        train_RMSE, test_RMSE = print_error(ytrain, ytest, predict_train, predict_test, "Visina površine mora (m)", max(wave_heights) - min(wave_heights))
+        print_predictions(ytest, predict_test, "final_train_net/" + filename_no_csv + "/predictions/test/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + "_test.csv")

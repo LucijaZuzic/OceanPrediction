@@ -75,6 +75,7 @@ for filename_no_csv in os.listdir("train_net"):
                 test_RMSE_filtered_ws.append(test_RMSE[(model_name, ws, hidden)]) 
 
             plt.figure(figsize = (15, 6), dpi = 80)
+            plt.rcParams.update({'font.size': 22})
             plt.title("Normalizirani RMSE za " + model_name + " model (veličina prozora " + str(ws) + ")")
             plt.xlabel("Broj skrivenih jedinica")
             plt.ylabel("Normalizirani RMSE")
@@ -97,6 +98,7 @@ for filename_no_csv in os.listdir("train_net"):
                 test_RMSE_filtered_hidden.append(test_RMSE[(model_name, ws, hidden)]) 
 
             plt.figure(figsize = (15, 6), dpi = 80)
+            plt.rcParams.update({'font.size': 22})
             plt.title("Normalizirani RMSE za " + model_name + " model (" + str(hidden) + " skrivenih slojeva)")
             plt.xlabel("Veličina prozora")
             plt.ylabel("Normalizirani RMSE")

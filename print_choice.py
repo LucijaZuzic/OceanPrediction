@@ -100,13 +100,14 @@ for model_name in model_names:
     print(count_hidden)
 
     plt.figure(figsize = (15, 6), dpi = 80)
+    plt.rcParams.update({'font.size': 22})
 
     plt.subplot(1, 2, 1) 
-    plt.title("Učestalost odabrane veličine prozora za " + model_name + " model")
+    plt.title("Učestalost odabrane veličine\nprozora za " + model_name + " model")
     plt.pie(list(count_ws.values()), labels = list(count_ws.keys()), autopct = '%1.2f%%')  
 
     plt.subplot(1, 2, 2) 
-    plt.title("Učestalost odabranog broja skrivenih slojeva za " + model_name + " model")
+    plt.title("Učestalost odabranog broja skrivenih\nslojeva za " + model_name + " model")
     plt.pie(list(count_hidden.values()), labels = list(count_hidden.keys()), autopct = '%1.2f%%') 
 
     plt.savefig("chosen_sizes/ws_hidden_" + model_name + ".png", bbox_inches = "tight")
@@ -128,7 +129,8 @@ for model_name in model_names:
         print(ws, filtered_best_hidden_for_model_ws[ws])
  
         plt.figure(figsize = (15, 6), dpi = 80)
-        plt.title("Učestalost odabranog broja skrivenih slojeva za " + model_name + " model\nza zadanu veličinu prozora " + str(ws))
+        plt.rcParams.update({'font.size': 22})
+        plt.title("Učestalost odabranog broja skrivenih\nslojeva za " + model_name + " model\nza zadanu veličinu prozora " + str(ws))
         plt.pie(list(filtered_best_hidden_for_model_ws[ws].values()), labels = list(filtered_best_hidden_for_model_ws[ws].keys()), autopct = '%1.2f%%') 
 
         plt.savefig("chosen_sizes/ws_" + str(ws) + "_" + model_name + ".png", bbox_inches = "tight")
@@ -139,7 +141,8 @@ for model_name in model_names:
         print(hidden, filtered_best_ws_for_model_hidden[hidden])
  
         plt.figure(figsize = (15, 6), dpi = 80)
-        plt.title("Učestalost odabrane veličine prozora za " + model_name + " model\nza zadani broj skrivenih slojeva " + str(hidden))
+        plt.rcParams.update({'font.size': 22})
+        plt.title("Učestalost odabrane veličine\nprozora za " + model_name + " model\nza zadani broj skrivenih slojeva " + str(hidden))
         plt.pie(list(filtered_best_ws_for_model_hidden[hidden].values()), labels = list(filtered_best_ws_for_model_hidden[hidden].keys()), autopct = '%1.2f%%') 
 
         plt.savefig("chosen_sizes/hidden_" + str(hidden) + "_" + model_name + ".png", bbox_inches = "tight")

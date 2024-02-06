@@ -21,11 +21,6 @@ def plot_predictions(predicted, dates_predicted, old_new, title, filename):
     plt.close()
 
 for filename_no_csv in os.listdir("extrapolate"):  
-
-    file_data = pd.read_csv("processed/" + filename_no_csv + ".csv", index_col = False, sep = ";")  
-    datetimes = list(file_data["date"]) 
-    wave_heights = list(file_data["sla"]) 
-    range_val = max(wave_heights) - min(wave_heights)
  
     for model_name in os.listdir("extrapolate/" + filename_no_csv + "/predictions/extrapolate"):  
             

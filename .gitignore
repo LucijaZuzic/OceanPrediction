@@ -1,6 +1,5 @@
 __pycache__/*
 *.pyc
 data_raw*/*
-train_net/*
-final_train_net/*
-extrapolate/*
+*.h5
+*.png

@@ -78,6 +78,9 @@ for filename_no_csv in os.listdir("train_net"):
 
             best_ws_for_model_hidden[(model_name, hidden)].append(filtered_ws[filtered_RMSE.index(min(filtered_RMSE))])
 
+if not os.path.isdir("chosen_sizes"):
+    os.makedirs("chosen_sizes")
+
 for model_name in model_names:
 
     filtered_ws = []
@@ -96,6 +99,8 @@ for model_name in model_names:
     print(count_ws)
     print(count_hidden)
 
+    plt.figure(figsize = (15, 6), dpi = 80)
+
     plt.subplot(1, 2, 1) 
     plt.title("Učestalost odabrane veličine prozora za " + model_name + " model")
     plt.pie(list(count_ws.values()), labels = list(count_ws.keys()), autopct = '%1.2f%%')  
@@ -104,7 +109,7 @@ for model_name in model_names:
     plt.title("Učestalost odabranog broja skrivenih slojeva za " + model_name + " model")
     plt.pie(list(count_hidden.values()), labels = list(count_hidden.keys()), autopct = '%1.2f%%') 
 
-    plt.show()
+    plt.savefig("chosen_sizes/ws_hidden_" + model_name + ".png", bbox_inches = "tight")
     plt.close()
 
     filtered_best_hidden_for_model_ws = dict()
@@ -122,18 +127,20 @@ for model_name in model_names:
 
         print(ws, filtered_best_hidden_for_model_ws[ws])
  
+        plt.figure(figsize = (15, 6), dpi = 80)
         plt.title("Učestalost odabranog broja skrivenih slojeva za " + model_name + " model\nza zadanu veličinu prozora " + str(ws))
         plt.pie(list(filtered_best_hidden_for_model_ws[ws].values()), labels = list(filtered_best_hidden_for_model_ws[ws].keys()), autopct = '%1.2f%%') 
 
-        plt.show()
+        plt.savefig("chosen_sizes/ws_" + str(ws) + "_" + model_name + ".png", bbox_inches = "tight")
         plt.close()
 
     for hidden in filtered_best_ws_for_model_hidden:
 
         print(hidden, filtered_best_ws_for_model_hidden[hidden])
  
+        plt.figure(figsize = (15, 6), dpi = 80)
         plt.title("Učestalost odabrane veličine prozora za " + model_name + " model\nza zadani broj skrivenih slojeva " + str(hidden))
         plt.pie(list(filtered_best_ws_for_model_hidden[hidden].values()), labels = list(filtered_best_ws_for_model_hidden[hidden].keys()), autopct = '%1.2f%%') 
 
-        plt.show()
+        plt.savefig("chosen_sizes/hidden_" + str(hidden) + "_" + model_name + ".png", bbox_inches = "tight")
         plt.close()

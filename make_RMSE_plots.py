@@ -38,9 +38,9 @@ for filename_no_csv in os.listdir("train_net"):
             ytest = list(test_data["actual"])
             predict_test = list(test_data["predicted"]) 
 
-            ws = filename.replace(".csv", "").split("_")[-4] 
+            ws = int(filename.replace(".csv", "").split("_")[-4])
             ws_range.add(ws)
-            hidden = filename.replace(".csv", "").split("_")[-2] 
+            hidden = int(filename.replace(".csv", "").split("_")[-2]) 
             hidden_range.add(hidden)
         
             train_data = pd.read_csv("train_net/" + filename_no_csv + "/predictions/train/" + model_name + "/" + filename.replace("test", "train"), index_col = False, sep = ";") 
@@ -82,12 +82,13 @@ for filename_no_csv in os.listdir("train_net"):
             plt.plot(hidden_range, train_RMSE_filtered_ws, label = "Treniranje")
             plt.plot(hidden_range, val_RMSE_filtered_ws, label = "Validacija")
             plt.plot(hidden_range, test_RMSE_filtered_ws, label = "Testiranje")
+            plt.xticks(hidden_range)
             plt.legend()
             plt.savefig("train_net/" + filename_no_csv + "/RMSE_plots/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_RMSE.png", bbox_inches = "tight")
             plt.close()
 
-        for hidden in hidden_range: 
-         
+        for hidden in hidden_range:
+            
             train_RMSE_filtered_hidden = []
             val_RMSE_filtered_hidden = []
             test_RMSE_filtered_hidden = [] 
@@ -105,6 +106,7 @@ for filename_no_csv in os.listdir("train_net"):
             plt.plot(ws_range, train_RMSE_filtered_hidden, label = "Treniranje")
             plt.plot(ws_range, val_RMSE_filtered_hidden, label = "Validacija")
             plt.plot(ws_range, test_RMSE_filtered_hidden, label = "Testiranje")
+            plt.xticks(ws_range)
             plt.legend()
             plt.savefig("train_net/" + filename_no_csv + "/RMSE_plots/" + model_name + "/" + filename_no_csv + "_" + model_name + "_hidden_" + str(hidden) + "_RMSE.png", bbox_inches = "tight")
             plt.close()

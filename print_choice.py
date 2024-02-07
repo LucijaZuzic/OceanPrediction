@@ -26,12 +26,6 @@ for filename_no_csv in os.listdir("train_net"):
         hidden_array = []
         val_RMSE = []
 
-        for filename in os.listdir("final_train_net/" + filename_no_csv + "/predictions/test/" + model_name): 
-            
-            test_data = pd.read_csv("final_train_net/" + filename_no_csv + "/predictions/test/" + model_name + "/" + filename, index_col = False, sep = ";") 
-            test_RMSE = math.sqrt(mean_squared_error(list(test_data["actual"]), list(test_data["predicted"]))) / range_val
-            print("test", filename_no_csv, model_name, test_RMSE, filename.replace(".csv", "").split("_")[-2], filename.replace(".csv", "").split("_")[-4])
-  
         for filename in os.listdir("train_net/" + filename_no_csv + "/predictions/validate/" + model_name): 
             
             val_data = pd.read_csv("train_net/" + filename_no_csv + "/predictions/validate/" + model_name + "/" + filename, index_col = False, sep = ";")  

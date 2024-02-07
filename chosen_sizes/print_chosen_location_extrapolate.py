@@ -6,8 +6,20 @@ import math
 
 num_props = 1    
 
-dict_for_table = dict()
+dict_for_table = dict() 
 model_names = set()
+ws_by_model = dict()
+hidden_by_model = dict()
+
+for filename_no_csv in os.listdir("train_net"):  
+    
+    for model_name in os.listdir("train_net/" + filename_no_csv + "/predictions/test"):
+            
+            ws_by_model[model_name] = dict()
+
+            hidden_by_model[model_name] = dict()
+    
+    break
 
 for filename_no_csv in os.listdir("train_net"):  
 
@@ -25,10 +37,15 @@ for filename_no_csv in os.listdir("train_net"):
         for filename in os.listdir("train_net/" + filename_no_csv + "/predictions/validate/" + model_name): 
             
             val_data = pd.read_csv("train_net/" + filename_no_csv + "/predictions/validate/" + model_name + "/" + filename, index_col = False, sep = ";")  
+             
+            one_ws = int(filename.replace(".csv", "").split("_")[-4])
+
+            if one_ws != 93:
+                continue
+
             val_RMSE.append(math.sqrt(mean_squared_error(list(val_data["actual"]), list(val_data["predicted"]))) / range_val)
-            
             hidden_array.append(int(filename.replace(".csv", "").split("_")[-2]))
-            ws_array.append(int(filename.replace(".csv", "").split("_")[-4]))
+            ws_array.append(one_ws)
             filename_array.append(filename)
   
         hidden = hidden_array[val_RMSE.index(min(val_RMSE))]
@@ -39,13 +56,39 @@ for filename_no_csv in os.listdir("train_net"):
         test_RMSE = math.sqrt(mean_squared_error(list(test_data["actual"]), list(test_data["predicted"]))) / range_val
            
         dict_for_table[(filename_no_csv, model_name)] = (ws, hidden, np.round(min(val_RMSE) * 1000, 3), np.round(test_RMSE * 1000, 3)) 
-
+   
         model_names.add(model_name)
 
-for model_name in model_names:
-    print(model_name)
+        if ws not in ws_by_model[model_name]:
+            ws_by_model[model_name][ws] = 0
+
+        ws_by_model[model_name][ws] += 1
+
+        if hidden not in hidden_by_model[model_name]:
+            hidden_by_model[model_name][hidden] = 0
+
+        hidden_by_model[model_name][hidden] += 1
+
+max_hidden = {model_name: max(list(hidden_by_model[model_name].values())) for model_name in hidden_by_model}
+max_ws = {model_name: max(list(ws_by_model[model_name].values())) for model_name in ws_by_model}
+ 
+for filename_no_csv in os.listdir("train_net"):  
+    ws_vals = dict()
+    hidden_vals = dict() 
     for entry in dict_for_table:
-        if entry[1] != model_name:
-            continue
+        if entry[0] != filename_no_csv:
+            continue 
         ws, hidden, val_RMSE, test_RMSE = dict_for_table[entry]
-        print(entry[0].replace("_", " & ") + " & " + str(ws) + " & " + str(hidden) + " & " + str(val_RMSE) + " & " + str(test_RMSE) + " \\\\ \\hline")
+        ws_vals[entry[1]] = ws
+        hidden_vals[entry[1]] = hidden
+    is_ok = True
+    for model_name in ws_vals: 
+        if ws_by_model[model_name][ws_vals[model_name]] != max_ws[model_name]:
+            is_ok = False
+            break
+    for model_name in hidden_vals: 
+        if hidden_by_model[model_name][hidden_vals[model_name]] != max_hidden[model_name]:
+            is_ok = False
+            break
+    if is_ok:
+        print(is_ok, filename_no_csv, ws_vals, hidden_vals)

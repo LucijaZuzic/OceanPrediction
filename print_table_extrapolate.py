@@ -25,12 +25,17 @@ for filename_no_csv in os.listdir("train_net"):
         for filename in os.listdir("train_net/" + filename_no_csv + "/predictions/validate/" + model_name): 
             
             val_data = pd.read_csv("train_net/" + filename_no_csv + "/predictions/validate/" + model_name + "/" + filename, index_col = False, sep = ";")  
-            val_RMSE.append(math.sqrt(mean_squared_error(list(val_data["actual"]), list(val_data["predicted"]))) / range_val)
             
+            one_ws = int(filename.replace(".csv", "").split("_")[-4])
+
+            if one_ws != 93:
+                continue
+
             hidden_array.append(int(filename.replace(".csv", "").split("_")[-2]))
-            ws_array.append(int(filename.replace(".csv", "").split("_")[-4]))
+            ws_array.append(one_ws)
             filename_array.append(filename)
-  
+            val_RMSE.append(math.sqrt(mean_squared_error(list(val_data["actual"]), list(val_data["predicted"]))) / range_val)
+ 
         hidden = hidden_array[val_RMSE.index(min(val_RMSE))]
         ws = ws_array[val_RMSE.index(min(val_RMSE))]
         new_filename = filename_array[val_RMSE.index(min(val_RMSE))]
@@ -48,4 +53,4 @@ for model_name in model_names:
         if entry[1] != model_name:
             continue
         ws, hidden, val_RMSE, test_RMSE = dict_for_table[entry]
-        print(entry[0].replace("_", " & ") + " & " + str(ws) + " & " + str(hidden) + " & " + str(val_RMSE) + " & " + str(test_RMSE) + " \\\\ \\hline")
+        print(entry[0].replace("_", " & ") + " & " + str(hidden) + " & " + str(val_RMSE) + " & " + str(test_RMSE) + " \\\\ \\hline")

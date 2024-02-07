@@ -11,15 +11,18 @@ model_names = set()
 ws_by_model = dict()
 hidden_by_model = dict()
 
-for filename_no_csv in os.listdir("train_net"):  
+val_RMSE_file = dict()
+test_RMSE_file = dict()
+
+for filename_no_csv in os.listdir("train_net"): 
+
+    val_RMSE_file[filename_no_csv] = dict() 
+    test_RMSE_file[filename_no_csv] = dict() 
     
     for model_name in os.listdir("train_net/" + filename_no_csv + "/predictions/test"):
             
-            ws_by_model[model_name] = dict()
-
-            hidden_by_model[model_name] = dict()
-    
-    break
+            ws_by_model[model_name] = dict() 
+            hidden_by_model[model_name] = dict()  
 
 for filename_no_csv in os.listdir("train_net"):  
 
@@ -37,9 +40,8 @@ for filename_no_csv in os.listdir("train_net"):
         for filename in os.listdir("train_net/" + filename_no_csv + "/predictions/validate/" + model_name): 
             
             val_data = pd.read_csv("train_net/" + filename_no_csv + "/predictions/validate/" + model_name + "/" + filename, index_col = False, sep = ";")  
-             
+
             val_RMSE.append(math.sqrt(mean_squared_error(list(val_data["actual"]), list(val_data["predicted"]))) / range_val)
-            
             hidden_array.append(int(filename.replace(".csv", "").split("_")[-2]))
             ws_array.append(int(filename.replace(".csv", "").split("_")[-4]))
             filename_array.append(filename)
@@ -65,9 +67,15 @@ for filename_no_csv in os.listdir("train_net"):
 
         hidden_by_model[model_name][hidden] += 1
 
+        val_RMSE_file[filename_no_csv][model_name] = min(val_RMSE)
+        test_RMSE_file[filename_no_csv][model_name] = test_RMSE
+
 max_hidden = {model_name: max(list(hidden_by_model[model_name].values())) for model_name in hidden_by_model}
 max_ws = {model_name: max(list(ws_by_model[model_name].values())) for model_name in ws_by_model}
- 
+
+best_for_model_val = dict()
+best_for_model_test = dict()
+
 for filename_no_csv in os.listdir("train_net"):  
     ws_vals = dict()
     hidden_vals = dict() 
@@ -88,3 +96,14 @@ for filename_no_csv in os.listdir("train_net"):
             break
     if is_ok:
         print(is_ok, filename_no_csv, ws_vals, hidden_vals)
+        for model_name in ws_vals:
+            print(model_name, test_RMSE_file[filename_no_csv][model_name], val_RMSE_file[filename_no_csv][model_name])
+
+            if model_name not in best_for_model_test or test_RMSE_file[filename_no_csv][model_name] < best_for_model_test[model_name][1]:
+                best_for_model_test[model_name] = (filename_no_csv, test_RMSE_file[filename_no_csv][model_name])
+            
+            if model_name not in best_for_model_val or val_RMSE_file[filename_no_csv][model_name] < best_for_model_val[model_name][1]:
+                best_for_model_val[model_name] = (filename_no_csv, val_RMSE_file[filename_no_csv][model_name])
+
+print(best_for_model_val)
+print(best_for_model_test)

@@ -46,11 +46,37 @@ for filename_no_csv in os.listdir("train_net"):
         dict_for_table[(filename_no_csv, model_name)] = (ws, hidden, np.round(min(val_RMSE) * 1000, 3), np.round(test_RMSE * 1000, 3)) 
 
         model_names.add(model_name)
-
+ 
 for model_name in model_names:
+    val_RMSE_arr = []
+    test_RMSE_arr = []
+    diff_arr = []
+    abs_diff_arr = []
+    entries = []
     print(model_name)
     for entry in dict_for_table:
         if entry[1] != model_name:
             continue
         ws, hidden, val_RMSE, test_RMSE = dict_for_table[entry]
-        print(entry[0].replace("_", " & ") + " & " + str(hidden) + " & " + str(val_RMSE) + " & " + str(test_RMSE) + " \\\\ \\hline")
+        print(entry[0].replace("_", " & ") + " & " + str(hidden) + " & " + str(val_RMSE) + " & " + str(test_RMSE) + " & " + str(np.round(test_RMSE - val_RMSE, 3)) + " & " + str(np.round(abs(test_RMSE - val_RMSE), 3)) + " \\\\ \\hline")
+        val_RMSE_arr.append(val_RMSE)
+        test_RMSE_arr.append(test_RMSE)
+        diff_arr.append(np.round(test_RMSE - val_RMSE, 3))
+        abs_diff_arr.append(np.round(abs(test_RMSE - val_RMSE), 3))
+        entries.append(entry[0])
+    print("val_RMSE_arr", "&", np.round(np.quantile(val_RMSE_arr, 0), 3), "&", np.round(np.quantile(val_RMSE_arr, 0.25), 3), "&", np.round(np.quantile(val_RMSE_arr, 0.5), 3), "&", np.round(np.quantile(val_RMSE_arr, 0.75), 3), "&", np.round(np.quantile(val_RMSE_arr, 1), 3), "&", np.round(np.average(val_RMSE_arr), 3), "&", np.round(np.std(val_RMSE_arr), 3), "\\\\ \\hline")
+    print("test_RMSE_arr", "&", np.round(np.quantile(test_RMSE_arr, 0), 3), "&", np.round(np.quantile(test_RMSE_arr, 0.25), 3), "&", np.round(np.quantile(test_RMSE_arr, 0.5), 3), "&", np.round(np.quantile(test_RMSE_arr, 0.75), 3), "&", np.round(np.quantile(test_RMSE_arr, 1), 3), "&", np.round(np.average(test_RMSE_arr), 3), "&", np.round(np.std(test_RMSE_arr), 3), "\\\\ \\hline")
+    print("diff_arr", "&", np.round(np.quantile(diff_arr, 0), 3), "&", np.round(np.quantile(diff_arr, 0.25), 3), "&", np.round(np.quantile(diff_arr, 0.5), 3), "&", np.round(np.quantile(diff_arr, 0.75), 3), "&", np.round(np.quantile(diff_arr, 1), 3), "&", np.round(np.average(diff_arr), 3), "&", np.round(np.std(diff_arr), 3), "\\\\ \\hline")
+    print("abs_diff_arr", "&", np.round(np.quantile(abs_diff_arr, 0), 3), "&", np.round(np.quantile(abs_diff_arr, 0.25), 3), "&", np.round(np.quantile(abs_diff_arr, 0.5), 3), "&", np.round(np.quantile(abs_diff_arr, 0.75), 3), "&", np.round(np.quantile(abs_diff_arr, 1), 3), "&", np.round(np.average(abs_diff_arr), 3), "&", np.round(np.std(abs_diff_arr), 3), "\\\\ \\hline")
+    pos_num = np.sum([diff > 0 for diff in diff_arr])
+    print(pos_num, "&", np.round(pos_num / len(diff_arr) * 100, 3), "\\\\ \\hline")
+
+    print("val_RMSE_arr max", "&", entries[val_RMSE_arr.index(max(val_RMSE_arr))], "&", val_RMSE_arr[val_RMSE_arr.index(max(val_RMSE_arr))], "&", test_RMSE_arr[val_RMSE_arr.index(max(val_RMSE_arr))], "&", diff_arr[val_RMSE_arr.index(max(val_RMSE_arr))], "&", abs_diff_arr[val_RMSE_arr.index(max(val_RMSE_arr))], "\\\\ \\hline")
+    print("test_RMSE_arr max", "&", entries[test_RMSE_arr.index(max(test_RMSE_arr))], "&", val_RMSE_arr[test_RMSE_arr.index(max(test_RMSE_arr))], "&", test_RMSE_arr[test_RMSE_arr.index(max(test_RMSE_arr))], "&", diff_arr[test_RMSE_arr.index(max(test_RMSE_arr))], "&", abs_diff_arr[test_RMSE_arr.index(max(test_RMSE_arr))], "\\\\ \\hline")
+    print("diff_arr max", "&", entries[diff_arr.index(max(diff_arr))], "&", val_RMSE_arr[diff_arr.index(max(diff_arr))], "&", test_RMSE_arr[diff_arr.index(max(diff_arr))], "&", diff_arr[diff_arr.index(max(diff_arr))], "&", abs_diff_arr[diff_arr.index(max(diff_arr))], "\\\\ \\hline")
+    print("abs_diff_arr max", "&", entries[abs_diff_arr.index(max(abs_diff_arr))], "&", val_RMSE_arr[abs_diff_arr.index(max(abs_diff_arr))], "&", test_RMSE_arr[abs_diff_arr.index(max(abs_diff_arr))], "&", diff_arr[abs_diff_arr.index(max(abs_diff_arr))], "&", max(abs_diff_arr), "\\\\ \\hline")
+    
+    print("val_RMSE_arr min", "&", entries[val_RMSE_arr.index(min(val_RMSE_arr))], "&", val_RMSE_arr[val_RMSE_arr.index(min(val_RMSE_arr))], "&", test_RMSE_arr[val_RMSE_arr.index(min(val_RMSE_arr))], "&", diff_arr[val_RMSE_arr.index(min(val_RMSE_arr))], "&", abs_diff_arr[val_RMSE_arr.index(min(val_RMSE_arr))], "\\\\ \\hline")
+    print("test_RMSE_arr min", "&", entries[test_RMSE_arr.index(min(test_RMSE_arr))], "&", val_RMSE_arr[test_RMSE_arr.index(min(test_RMSE_arr))], "&", test_RMSE_arr[test_RMSE_arr.index(min(test_RMSE_arr))], "&", diff_arr[test_RMSE_arr.index(min(test_RMSE_arr))], "&", abs_diff_arr[test_RMSE_arr.index(min(test_RMSE_arr))], "\\\\ \\hline")
+    print("diff_arr min", "&", entries[diff_arr.index(min(diff_arr))], "&", val_RMSE_arr[diff_arr.index(min(diff_arr))], "&", test_RMSE_arr[diff_arr.index(min(diff_arr))], "&", diff_arr[diff_arr.index(min(diff_arr))], "&", abs_diff_arr[diff_arr.index(min(diff_arr))], "\\\\ \\hline")
+    print("abs_diff_arr min", "&", entries[abs_diff_arr.index(min(abs_diff_arr))], "&", val_RMSE_arr[abs_diff_arr.index(min(abs_diff_arr))], "&", test_RMSE_arr[abs_diff_arr.index(min(abs_diff_arr))], "&", diff_arr[abs_diff_arr.index(min(abs_diff_arr))], "&", abs_diff_arr[abs_diff_arr.index(min(abs_diff_arr))], "\\\\ \\hline")

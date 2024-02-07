@@ -12,13 +12,14 @@ def print_error(trainY, train_predict, title, range_val):
 def plot_result(trainY, train_predict, title, datetimes, filename):
     rows = len(trainY)
     plt.figure(figsize = (15, 6), dpi = 80)
+    plt.rcParams.update({'font.size': 22})
     plt.plot(range(rows), trainY, color = "b") 
     plt.plot(range(rows), train_predict, color = "orange") 
     datetimes_new = datetimes[-len(train_predict):]
-    datetimes_ix_filter = [i for i in range(0, len(datetimes_new), int(len(datetimes_new) // 10))]
+    datetimes_ix_filter = [i for i in range(0, len(datetimes_new), int(len(datetimes_new) // 5))]
     datetimes_filter = [datetimes_new[i] for i in datetimes_ix_filter]
     plt.xticks(datetimes_ix_filter, datetimes_filter) 
-    plt.legend(['Stvarno', 'Predviđeno'])
+    plt.legend(['Stvarno', 'Predviđeno'], loc = "upper left", ncol = 2)
     plt.xlabel('Datum')
     plt.ylabel("Visina površine mora (m)")
     plt.title(title) 

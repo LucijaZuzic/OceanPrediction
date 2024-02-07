@@ -4,16 +4,17 @@ import os
 
 def plot_predictions(predicted, dates_predicted, old_new, title, filename):
     
-    datetimes_ix_filter = [i for i in range(0, len(dates_predicted), int(len(dates_predicted) // 10))]
+    datetimes_ix_filter = [i for i in range(0, len(dates_predicted), int(len(dates_predicted) // 5))]
     datetimes_filter = [dates_predicted[i] for i in datetimes_ix_filter]
     plt.figure(figsize = (15, 6), dpi = 80)
+    plt.rcParams.update({'font.size': 22})
     plt.plot(predicted) 
     plt.title(title)
     plt.axvline(old_new, color = "red")
-    if old_new <= 365:
-        plt.text((len(predicted) + old_new) / 2, min(predicted), "Ekstrapolacija", color = "red") 
-    else:
+    if old_new > len(predicted) - old_new:
         plt.text(old_new / 2, min(predicted), "Ekstrapolacija", color = "red") 
+    else:
+        plt.text((len(predicted) + old_new) / 2, min(predicted), "Ekstrapolacija", color = "red") 
     plt.xticks(datetimes_ix_filter, datetimes_filter)
     plt.xlabel('Datum')
     plt.ylabel("Visina površine mora (m)") 

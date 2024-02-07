@@ -20,19 +20,20 @@ def plot_result(trainY, valY, testY, train_predict, val_predict, test_predict, t
     predictions = np.append(train_predict, val_predict)
     predictions = np.append(predictions, test_predict)
     datetimes_new = datetimes[-len(predictions):]
-    datetimes_ix_filter = [i for i in range(0, len(datetimes_new), int(len(datetimes_new) // 10))]
+    datetimes_ix_filter = [i for i in range(0, len(datetimes_new), int(len(datetimes_new) // 5))]
     datetimes_filter = [datetimes_new[i] for i in datetimes_ix_filter]
     rows = len(actual)
     plt.figure(figsize = (15, 6), dpi = 80)
+    plt.rcParams.update({'font.size': 22})
     plt.plot(range(rows), actual, color = "b") 
     plt.plot(range(rows), predictions, color = "orange") 
     plt.xticks(datetimes_ix_filter, datetimes_filter)
     plt.axvline(x = len(trainY), color = 'r')
     plt.text(len(trainY) / 2, min(min(actual), min(predictions)), "Treniranje") 
-    plt.text((len(trainY) + len(trainY) + len(valY)) / 2, min(min(actual), min(predictions)), "Validacija", color = "r") 
+    plt.text((len(trainY) + len(trainY) + len(valY)) / 2.15, min(min(actual), min(predictions)), "Validacija", color = "r") 
     plt.axvline(x = len(trainY) + len(valY), color = 'g')
     plt.text((len(trainY) + len(valY) + len(trainY) + len(valY) + len(testY)) / 2, min(min(actual), min(predictions)), "Testiranje", color = 'g')
-    plt.legend(['Stvarno', 'Predviđeno'])
+    plt.legend(['Stvarno', 'Predviđeno'], loc = "upper left", ncol = 2)
     plt.xlabel('Datum')
     plt.ylabel("Visina površine mora (m)")
     plt.title(title) 

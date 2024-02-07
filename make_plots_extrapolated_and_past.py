@@ -7,13 +7,14 @@ import os
 def plot_predictions(previous_waves, previous_dates, predicted, dates_predicted, old_new, title, filename):
     all_waves = np.append(previous_waves, predicted) 
     all_dates = np.append(previous_dates, dates_predicted)  
-    datetimes_ix_filter = [i for i in range(0, len(all_dates), int(len(all_dates) // 10))]
+    datetimes_ix_filter = [i for i in range(0, len(all_dates), int(len(all_dates) // 5))]
     datetimes_filter = [all_dates[i] for i in datetimes_ix_filter]
     plt.figure(figsize = (15, 6), dpi = 80)
+    plt.rcParams.update({'font.size': 22})
     plt.plot(all_waves) 
     plt.title(title)
     plt.axvline(len(previous_waves) + old_new, color = "red")
-    plt.text((len(previous_waves) + old_new) * 0.9, min(all_waves),"Ekstrapolacija", color = "red") 
+    plt.text((len(previous_waves) + old_new) / 2, min(all_waves),"Ekstrapolacija", color = "red") 
     plt.xticks(datetimes_ix_filter, datetimes_filter)
     plt.xlabel('Datum')
     plt.ylabel("Visina površine mora (m)") 

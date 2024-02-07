@@ -39,6 +39,63 @@ def plot_result(trainY, valY, testY, train_predict, val_predict, test_predict, t
     plt.title(title) 
     plt.savefig(filename, bbox_inches = "tight")
     plt.close()
+    
+    actual = np.append(valY, testY) 
+    predictions = np.append(val_predict, test_predict)
+    datetimes_new = datetimes[-len(predictions):]
+    datetimes_ix_filter = [i for i in range(0, len(datetimes_new), int(len(datetimes_new) // 5))]
+    datetimes_filter = [datetimes_new[i] for i in datetimes_ix_filter]
+    rows = len(actual)
+    plt.figure(figsize = (15, 6), dpi = 80)
+    plt.rcParams.update({'font.size': 22})
+    plt.plot(range(rows), actual, color = "b") 
+    plt.plot(range(rows), predictions, color = "orange") 
+    plt.xticks(datetimes_ix_filter, datetimes_filter) 
+    plt.text(len(valY) / 2, min(min(actual), min(predictions)), "Validacija") 
+    plt.axvline(x = len(valY), color = 'r')
+    plt.text((len(valY) + len(predictions)) / 2, min(min(actual), min(predictions)), "Testiranje", color = 'r')
+    plt.legend(['Stvarno', 'Predviđeno'], loc = "upper left", ncol = 2)
+    plt.xlabel('Datum')
+    plt.ylabel("Visina površine mora (m)")
+    plt.title(title + "\nValidacija i testiranje")  
+    plt.savefig(filename.replace(".png", "_validation_test.png"), bbox_inches = "tight")
+    plt.close()
+
+    actual = valY
+    predictions = val_predict
+    datetimes_new = datetimes[-len(valY)-len(testY):-len(testY)]
+    datetimes_ix_filter = [i for i in range(0, len(datetimes_new), int(len(datetimes_new) // 5))]
+    datetimes_filter = [datetimes_new[i] for i in datetimes_ix_filter]
+    rows = len(actual)
+    plt.figure(figsize = (15, 6), dpi = 80)
+    plt.rcParams.update({'font.size': 22})
+    plt.plot(range(rows), actual, color = "b") 
+    plt.plot(range(rows), predictions, color = "orange") 
+    plt.xticks(datetimes_ix_filter, datetimes_filter) 
+    plt.legend(['Stvarno', 'Predviđeno'], loc = "upper left", ncol = 2)
+    plt.xlabel('Datum')
+    plt.ylabel("Visina površine mora (m)")
+    plt.title(title + "\nValidacija")  
+    plt.savefig(filename.replace(".png", "_validation_only.png"), bbox_inches = "tight")
+    plt.close()
+
+    actual = testY
+    predictions = test_predict
+    datetimes_new = datetimes[-len(predictions):]
+    datetimes_ix_filter = [i for i in range(0, len(datetimes_new), int(len(datetimes_new) // 5))]
+    datetimes_filter = [datetimes_new[i] for i in datetimes_ix_filter]
+    rows = len(actual)
+    plt.figure(figsize = (15, 6), dpi = 80)
+    plt.rcParams.update({'font.size': 22})
+    plt.plot(range(rows), actual, color = "b") 
+    plt.plot(range(rows), predictions, color = "orange") 
+    plt.xticks(datetimes_ix_filter, datetimes_filter) 
+    plt.legend(['Stvarno', 'Predviđeno'], loc = "upper left", ncol = 2)
+    plt.xlabel('Datum')
+    plt.ylabel("Visina površine mora (m)")
+    plt.title(title + "\nTestiranje")  
+    plt.savefig(filename.replace(".png", "_test_only.png"), bbox_inches = "tight")
+    plt.close()
 
 for filename_no_csv in os.listdir("train_net"):  
 

@@ -34,6 +34,24 @@ def plot_result(trainY, testY, train_predict, test_predict, title, datetimes, fi
     plt.savefig(filename, bbox_inches = "tight")
     plt.close()
 
+    actual = testY  
+    predictions = test_predict
+    rows = len(actual)
+    plt.figure(figsize = (15, 6), dpi = 80)
+    plt.rcParams.update({'font.size': 22})
+    plt.plot(range(rows), actual, color = "b") 
+    plt.plot(range(rows), predictions, color = "orange") 
+    datetimes_new = datetimes[-len(predictions):]
+    datetimes_ix_filter = [i for i in range(0, len(datetimes_new), int(len(datetimes_new) // 5))]
+    datetimes_filter = [datetimes_new[i] for i in datetimes_ix_filter]
+    plt.xticks(datetimes_ix_filter, datetimes_filter)  
+    plt.legend(['Stvarno', 'Predviđeno'], loc = "upper left", ncol = 2)
+    plt.xlabel('Datum')
+    plt.ylabel("Visina površine mora (m)")
+    plt.title(title + "\nTestiranje") 
+    plt.savefig(filename.replace(".png", "_test_only.png"), bbox_inches = "tight")
+    plt.close()
+
 for filename_no_csv in os.listdir("final_train_net"):  
 
     file_data = pd.read_csv("processed/" + filename_no_csv + ".csv", index_col = False, sep = ";")  

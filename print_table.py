@@ -44,6 +44,17 @@ for filename_no_csv in os.listdir("train_net"):
 
         model_names.add(model_name)
  
+list_of_locs = []
+
+for filename_no_csv in os.listdir("train_net"):  
+  
+    long = float(filename_no_csv.split("_")[0])
+    lat = float(filename_no_csv.split("_")[1])
+ 
+    list_of_locs.append((long, lat))
+
+list_of_locs.sort()
+
 for model_name in model_names:
     val_RMSE_arr = []
     test_RMSE_arr = []
@@ -51,11 +62,11 @@ for model_name in model_names:
     abs_diff_arr = []
     entries = []
     print(model_name)
-    for entry in dict_for_table:
-        if entry[1] != model_name:
-            continue
+    for loc in list_of_locs:
+        long, lat = loc
+        entry = (str(long) + "_" + str(lat), model_name)
         ws, hidden, val_RMSE, test_RMSE = dict_for_table[entry]
-        print(entry[0].replace("_", " & ") + " & " + str(hidden) + " & " + str(val_RMSE) + " & " + str(test_RMSE) + " & " + str(np.round(test_RMSE - val_RMSE, 3)) + " & " + str(np.round(abs(test_RMSE - val_RMSE), 3)) + " \\\\ \\hline")
+        print(entry[0].replace("_", " & ") + " & " + str(ws) + " & " + str(hidden) + " & " + str(val_RMSE) + " & " + str(test_RMSE) + " & " + str(np.round(test_RMSE - val_RMSE, 3)) + " & " + str(np.round(abs(test_RMSE - val_RMSE), 3)) + " \\\\ \\hline")
         val_RMSE_arr.append(val_RMSE)
         test_RMSE_arr.append(test_RMSE)
         diff_arr.append(np.round(test_RMSE - val_RMSE, 3))

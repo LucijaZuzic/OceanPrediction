@@ -86,11 +86,11 @@ for filename_no_csv in os.listdir("train_net"):
         ws_vals[entry[1]] = ws
         hidden_vals[entry[1]] = hidden
     is_ok = True
-    for model_name in ws_vals: 
+    for model_name in ["GRU", "RNN"]: 
         if ws_by_model[model_name][ws_vals[model_name]] != max_ws[model_name]:
             is_ok = False
             break
-    for model_name in hidden_vals: 
+    for model_name in ["GRU"]: 
         if hidden_by_model[model_name][hidden_vals[model_name]] != max_hidden[model_name]:
             is_ok = False
             break

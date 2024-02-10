@@ -38,12 +38,7 @@ for model_name in os.listdir("train_net/" + filename_no_csv + "/predictions/test
             test_RMSE.append(np.round(math.sqrt(mean_squared_error(list(test_data["actual"]), list(test_data["predicted"]))) / range_val * 1000, 3)) 
         else:
             test_RMSE.append(0) 
-
-    print(model_name)
-    print(hidden_array)
-    print(val_RMSE)
-    print(test_RMSE)
-
+ 
     sorted_hidden = sorted(hidden_array)
 
     ix_order = [hidden_array.index(hval) for hval in sorted_hidden]

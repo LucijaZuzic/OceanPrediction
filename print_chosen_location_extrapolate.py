@@ -42,10 +42,7 @@ for filename_no_csv in os.listdir("train_net"):
             val_data = pd.read_csv("train_net/" + filename_no_csv + "/predictions/validate/" + model_name + "/" + filename, index_col = False, sep = ";")  
              
             one_ws = int(filename.replace(".csv", "").split("_")[-4])
-
-            if one_ws != 93:
-                continue
-
+ 
             val_RMSE.append(math.sqrt(mean_squared_error(list(val_data["actual"]), list(val_data["predicted"]))) / range_val)
             hidden_array.append(int(filename.replace(".csv", "").split("_")[-2]))
             ws_array.append(one_ws)

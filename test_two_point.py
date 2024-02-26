@@ -15,7 +15,20 @@ file_data = pd.read_csv("processed/" + filename_no_csv + ".csv", index_col = Fal
 wave_heights = list(file_data["sla"]) 
 range_val = max(wave_heights) - min(wave_heights)
 
-for used_ws in [1, 7, 31, 62, 93]:
+all_ws = []
+
+for model_name in os.listdir("train_net/" + filename_no_csv + "/predictions/test"):
+
+    for filename in os.listdir("train_net/" + filename_no_csv + "/predictions/validate/" + model_name): 
+         
+        one_ws = int(filename.replace(".csv", "").split("_")[-4])
+
+        if one_ws not in all_ws:
+            all_ws.append(one_ws)
+
+all_ws = sorted(all_ws)
+
+for used_ws in all_ws:
 
     print(used_ws)
 

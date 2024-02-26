@@ -66,16 +66,16 @@ for filename_no_csv in os.listdir("train_net"):
 
             hidden = filtered_hidden[filtered_RMSE.index(min(filtered_RMSE))]
         
-            xtrain, ytrain = get_XY(wave_heights, ws, num_props)  
+            xtrain, ytrain = get_XY(wave_heights, ws)  
 
             if model_name == "RNN": 
-                demo_model = create_RNN(hidden, num_props, (ws, num_props))  
+                demo_model = create_RNN(hidden, ws, (ws, num_props))  
 
             if model_name == "LSTM":
-                demo_model = create_LSTM(hidden, num_props, (ws, num_props))  
+                demo_model = create_LSTM(hidden, ws, (ws, num_props))  
 
             if model_name == "GRU":
-                demo_model = create_GRU(hidden, num_props, (ws, num_props))  
+                demo_model = create_GRU(hidden, ws, (ws, num_props))  
             
             demo_model.save("extrapolate/" + filename_no_csv + "/models/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + ".h5") 
             history_model = demo_model.fit(xtrain, ytrain, verbose = 1)  
@@ -98,7 +98,7 @@ for filename_no_csv in os.listdir("train_net"):
 
             while date_predicted[-1] < last_datetime:
 
-                x_extrapolated, y_extrapolated = get_XY(np.array(predictions_array[-ws-1:]), ws, num_props)  
+                x_extrapolated, y_extrapolated = get_XY(np.array(predictions_array[-ws*2-1:]), ws)  
 
                 preds = demo_model.predict(x_extrapolated)  
 

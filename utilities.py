@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense, SimpleRNN, LSTM, GRU
+from keras.layers import Activation
+from keras import backend as K
+from keras.utils.generic_utils import get_custom_objects
 
 def print_predictions(actual, predicted, name_file):
     
@@ -13,26 +16,36 @@ def print_predictions(actual, predicted, name_file):
 
     for ix in range(len(actual)):
 
-        strpr += str(actual[ix]) + ";" + str(predicted[ix]) + "\n"
+        for ix2 in range(len(actual[ix])):
+
+            strpr += str(actual[ix][ix2]) + ";" + str(predicted[ix][ix2]) + "\n"
 
     file_processed = open(name_file, "w")
     file_processed.write(strpr.replace("[", "").replace("]", ""))
     file_processed.close()
 
-def get_XY(dat, time_steps, num_props):
+def get_XY(dat, time_steps, len_skip = -1, len_output = -1):
     X = []
     Y = [] 
-    for i in range(len(dat)):
+    if len_skip == -1:
+        len_skip = time_steps
+    if len_output == -1:
+        len_output = time_steps
+    for i in range(0, len(dat), len_skip):
         x_vals = dat[i:min(i + time_steps, len(dat))]
-        if len(x_vals) == time_steps and i + time_steps < len(dat):
+        if len(x_vals) == time_steps and i + time_steps + len_output <= len(dat):
             X.append(np.array(x_vals))
-            Y.append(np.array(dat[i + time_steps]))
+            Y.append(np.array(dat[i + time_steps:i + time_steps + len_output]))
     X = np.array(X)
     Y = np.array(Y)
     return X, Y
+  
+def custom_activation(x): 
+    return K.abs(x)  
 
 def create_RNN(hidden_units, dense_units, input_shape, act_layer = "linear"):
     model = Sequential()
+    get_custom_objects().update({'custom_activation': Activation(custom_activation)})
     model.add(SimpleRNN(hidden_units, input_shape = input_shape, activation = act_layer))
     model.add(Dense(units = dense_units, activation = act_layer))
     model.compile(loss = 'mean_squared_error', optimizer = 'adam')
@@ -40,6 +53,7 @@ def create_RNN(hidden_units, dense_units, input_shape, act_layer = "linear"):
 
 def create_GRU(hidden_units, dense_units, input_shape, act_layer = "linear"):
     model = Sequential()
+    get_custom_objects().update({'custom_activation': Activation(custom_activation)})
     model.add(GRU(hidden_units, input_shape = input_shape, activation = act_layer))
     model.add(Dense(units = dense_units, activation = act_layer))
     model.compile(loss = 'mean_squared_error', optimizer = 'adam')
@@ -47,6 +61,7 @@ def create_GRU(hidden_units, dense_units, input_shape, act_layer = "linear"):
 
 def create_LSTM(hidden_units, dense_units, input_shape, act_layer = "linear"):
     model = Sequential()
+    get_custom_objects().update({'custom_activation': Activation(custom_activation)})
     model.add(LSTM(hidden_units, input_shape = input_shape, activation = act_layer))
     model.add(Dense(units = dense_units, activation = act_layer))
     model.compile(loss = 'mean_squared_error', optimizer = 'adam')

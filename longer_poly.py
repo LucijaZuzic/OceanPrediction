@@ -64,8 +64,8 @@ for filename in os.listdir("processed"):
     rmse_train = math.sqrt(mean_squared_error(waves_train, sinus_like_train)) / (max(waves) - min(waves))
     rmse_window_train = math.sqrt(mean_squared_error(waves_train, sinus_like_window_train)) / (max(waves) - min(waves))
   
-    #poly_amplitudes = np.polyfit(range(len(amplitudes_train)), amplitudes_train, deg_amplitudes)
-    poly_amplitudes = [0, np.min(amplitudes_train)]
+    poly_amplitudes = np.polyfit(range(len(amplitudes_train)), amplitudes_train, deg_amplitudes)
+    #poly_amplitudes = [0, np.min(amplitudes_train)]
     amplitudes_extrapolate = [np.sum([poly_amplitudes[ix] * x ** (deg_amplitudes - ix) for ix in range(len(poly_amplitudes))]) for x in range(len(waves) + new_delta.days)]
     amplitudes_predicted_all = amplitudes_extrapolate[:len(waves)]
     amplitudes_predicted_train = amplitudes_predicted_all[:len(amplitudes_train)]
@@ -85,8 +85,8 @@ for filename in os.listdir("processed"):
     for ix in range(len(amplitudes_train)):
         amplitudes_estimate_predicted_extrapolate[ix] = amplitudes_train[ix]
 
-    #poly_amplitudes_window = np.polyfit(range(len(amplitudes_window_train)), amplitudes_window_train, deg_amplitudes)
-    poly_amplitudes_window = [0, np.min(amplitudes_window_train)]
+    poly_amplitudes_window = np.polyfit(range(len(amplitudes_window_train)), amplitudes_window_train, deg_amplitudes)
+    #poly_amplitudes_window = [0, np.min(amplitudes_window_train)]
     amplitudes_window_extrapolate = [np.sum([poly_amplitudes_window[ix] * x ** (deg_amplitudes - ix) for ix in range(len(poly_amplitudes_window))]) for x in range((len(waves) + new_delta.days) // ws + 1)]
     amplitudes_window_extrapolate = [np.average(amplitudes_extrapolate[i:i+ws]) for i in range(0, len(waves) + new_delta.days, ws)]
     amplitudes_window_predicted_all = amplitudes_window_extrapolate[:len(waves) // ws + 1]

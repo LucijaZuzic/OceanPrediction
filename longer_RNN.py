@@ -5,8 +5,12 @@ import math
 from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
+from utilities import get_XY, get_X, create_GRU, create_LSTM, create_RNN, print_predictions
 
 ws = 365
+models = ["LSTM", "RNN", "GRU"] 
+hidden = 200
+num_props = 1
 
 deg_amplitudes = 1
 
@@ -63,10 +67,87 @@ for filename in os.listdir("processed"):
 
     rmse_train = math.sqrt(mean_squared_error(waves_train, sinus_like_train)) / (max(waves) - min(waves))
     rmse_window_train = math.sqrt(mean_squared_error(waves_train, sinus_like_window_train)) / (max(waves) - min(waves))
-  
+ 
+    x_amplitudes, y_amplitudes = get_XY(amplitudes_train, ws)
+
+    x_amplitudes_to_predict = get_X(amplitudes_train, ws)
+
+    all_predicted_amplitudes = []
+    
+    for model_name in ["LSTM"]: 
+            
+        if model_name == "RNN": 
+            demo_model_amplitudes = create_RNN(hidden, ws, (ws, num_props), act_layer = "custom_activation_amplitude") 
+
+        if model_name == "GRU": 
+            demo_model_amplitudes = create_GRU(hidden, ws, (ws, num_props), act_layer = "custom_activation_amplitude") 
+
+        if model_name == "LSTM": 
+            demo_model_amplitudes = create_LSTM(hidden, ws, (ws, num_props), act_layer = "custom_activation_amplitude") 
+            
+        history_model_amplitudes = demo_model_amplitudes.fit(x_amplitudes, y_amplitudes, verbose = 1) 
+   
+        predict_train_amplitudes = demo_model_amplitudes.predict(x_amplitudes_to_predict)  
+ 
+        print(math.sqrt(mean_squared_error(y_amplitudes, predict_train_amplitudes[:len(y_amplitudes)])) / (max(amplitudes_train) - min(amplitudes_train)))
+       
+        for i in range(len(predict_train_amplitudes)):
+            for j in range(len(predict_train_amplitudes[i])):
+                all_predicted_amplitudes.append(predict_train_amplitudes[i][j])
+
+        last_data = predict_train_amplitudes[-1]
+
+        while len(all_predicted_amplitudes) < len(waves) + new_delta.days:
+
+            predict_train_amplitudes_last = demo_model_amplitudes.predict(get_X(last_data, ws))
+        
+            last_data = predict_train_amplitudes_last[-1]
+            
+            for j in range(len(last_data)):
+                all_predicted_amplitudes.append(last_data[j]) 
+
+    x_middle, y_middle = get_XY(middle_train, ws)
+
+    x_middle_to_predict = get_X(middle_train, ws)
+
+    all_predicted_middle = []
+    
+    for model_name in ["LSTM"]: 
+            
+        if model_name == "RNN": 
+            demo_model_middle = create_RNN(hidden, ws, (ws, num_props), act_layer = "custom_activation_middle") 
+
+        if model_name == "GRU": 
+            demo_model_middle = create_GRU(hidden, ws, (ws, num_props), act_layer = "custom_activation_middle") 
+
+        if model_name == "LSTM": 
+            demo_model_middle = create_LSTM(hidden, ws, (ws, num_props), act_layer = "custom_activation_middle") 
+            
+        history_model_middle = demo_model_middle.fit(x_middle, y_middle, verbose = 1) 
+   
+        predict_train_middle = demo_model_middle.predict(x_middle_to_predict)  
+ 
+        print(math.sqrt(mean_squared_error(y_middle, predict_train_middle[:len(y_middle)])) / (max(middle_train) - min(middle_train)))
+     
+        for i in range(len(predict_train_middle)):
+            for j in range(len(predict_train_middle[i])):
+                all_predicted_middle.append(predict_train_middle[i][j])
+
+        last_data = predict_train_middle[-1]
+
+        while len(all_predicted_middle) < len(waves) + new_delta.days:
+
+            predict_train_middle_last = demo_model_middle.predict(get_X(last_data, ws))
+        
+            last_data = predict_train_middle_last[-1]
+            
+            for j in range(len(last_data)):
+                all_predicted_middle.append(last_data[j])  
+
     #poly_amplitudes = np.polyfit(range(len(amplitudes_train)), amplitudes_train, deg_amplitudes)
-    poly_amplitudes = [0, np.min(amplitudes_train)]
-    amplitudes_extrapolate = [np.sum([poly_amplitudes[ix] * x ** (deg_amplitudes - ix) for ix in range(len(poly_amplitudes))]) for x in range(len(waves) + new_delta.days)]
+    #poly_amplitudes = [0, np.min(amplitudes_train[:-1])]
+    #amplitudes_extrapolate = [np.sum([poly_amplitudes[ix] * x ** (deg_amplitudes - ix) for ix in range(len(poly_amplitudes))]) for x in range(len(waves) + new_delta.days)]
+    amplitudes_extrapolate = all_predicted_amplitudes[:len(waves) + new_delta.days]
     amplitudes_predicted_all = amplitudes_extrapolate[:len(waves)]
     amplitudes_predicted_train = amplitudes_predicted_all[:len(amplitudes_train)]
     amplitudes_predicted_test = amplitudes_predicted_all[len(amplitudes_train):]
@@ -86,8 +167,8 @@ for filename in os.listdir("processed"):
         amplitudes_estimate_predicted_extrapolate[ix] = amplitudes_train[ix]
 
     #poly_amplitudes_window = np.polyfit(range(len(amplitudes_window_train)), amplitudes_window_train, deg_amplitudes)
-    poly_amplitudes_window = [0, np.min(amplitudes_window_train)]
-    amplitudes_window_extrapolate = [np.sum([poly_amplitudes_window[ix] * x ** (deg_amplitudes - ix) for ix in range(len(poly_amplitudes_window))]) for x in range((len(waves) + new_delta.days) // ws + 1)]
+    #poly_amplitudes_window = [0, np.min(amplitudes_window_train)]
+    #amplitudes_window_extrapolate = [np.sum([poly_amplitudes_window[ix] * x ** (deg_amplitudes - ix) for ix in range(len(poly_amplitudes_window))]) for x in range((len(waves) + new_delta.days) // ws + 1)]
     amplitudes_window_extrapolate = [np.average(amplitudes_extrapolate[i:i+ws]) for i in range(0, len(waves) + new_delta.days, ws)]
     amplitudes_window_predicted_all = amplitudes_window_extrapolate[:len(waves) // ws + 1]
     amplitudes_window_predicted_train = amplitudes_window_predicted_all[:len(amplitudes_window_train)]
@@ -108,8 +189,9 @@ for filename in os.listdir("processed"):
         amplitudes_window_estimate_predicted_extrapolate[ix] = amplitudes_window_train[ix]
  
     #poly_middle = np.polyfit(range(len(middle_train)), middle_train, deg_middle)
-    poly_middle = [0.0036 / 365, min(middle_train)]
-    middle_extrapolate = [np.sum([poly_middle[ix] * x ** (deg_middle - ix) for ix in range(len(poly_middle))]) for x in range(len(waves) + new_delta.days)]
+    #poly_middle = [0.0036 / 365, min(middle_train)]
+    #middle_extrapolate = [np.sum([poly_middle[ix] * x ** (deg_middle - ix) for ix in range(len(poly_middle))]) for x in range(len(waves) + new_delta.days)]
+    middle_extrapolate = all_predicted_middle[:len(waves) + new_delta.days]
     middle_predicted_all = middle_extrapolate[:len(waves)]
     middle_predicted_train = middle_predicted_all[:len(middle_train)]
     middle_predicted_test = middle_predicted_all[len(middle_train):]
@@ -129,8 +211,9 @@ for filename in os.listdir("processed"):
         middle_estimate_predicted_extrapolate[ix] = middle_train[ix]
 
     #poly_middle_window = np.polyfit(range(len(middle_window_train)), middle_window_train, deg_middle)
-    poly_middle_window = [0.0036, min(middle_window_train)]
-    middle_window_extrapolate = [np.sum([poly_middle_window[ix] * x ** (deg_middle - ix) for ix in range(len(poly_middle_window))]) for x in range((len(waves) + new_delta.days) // ws + 1)]
+    #poly_middle_window = [0.0036, min(middle_window_train)]
+    #middle_window_extrapolate = [np.sum([poly_middle_window[ix] * x ** (deg_middle - ix) for ix in range(len(poly_middle_window))]) for x in range((len(waves) + new_delta.days) // ws + 1)]
+    middle_window_extrapolate = [np.average(middle_extrapolate[i:i+ws]) for i in range(0, len(waves) + new_delta.days, ws)]
     middle_window_predicted_all = middle_window_extrapolate[:len(waves) // ws + 1]
     middle_window_predicted_train = middle_window_predicted_all[:len(middle_window_train)]
     middle_window_predicted_test = middle_window_predicted_all[len(middle_window_train):]
@@ -220,4 +303,29 @@ for filename in os.listdir("processed"):
     plt.axvline(len(waves), color = "orange")
     plt.xticks(datetimes_ix_filter, datetimes_filter)
     plt.show()
-    plt.close() 
+    plt.close()
+
+    plt.figure(figsize=(16, 9))
+    plt.plot(waves)
+    plt.plot(sinus_like_window_train, color = "red")
+    plt.plot(sinus_like_window_extrapolate, color = "red")
+    plt.plot(amplitudes_window_train_expand, color = "green")
+    plt.plot(amplitudes_window_extrapolate_expand, color = "green")
+    plt.plot(middle_window_train_expand, color = "blue")
+    plt.plot(middle_window_extrapolate_expand, color = "blue")
+    plt.axvline(len(waves_train), color = "orange")
+    plt.axvline(len(waves), color = "orange")
+    plt.xticks(datetimes_ix_filter, datetimes_filter)
+    plt.close()
+ 
+    plt.figure(figsize=(16, 9))
+    plt.plot(waves)
+    plt.plot(sinus_like_window_extrapolate, color = "red")
+    plt.plot(amplitudes_train, color = "green")
+    plt.plot(amplitudes_window_extrapolate_expand, color = "green")
+    plt.plot(middle_train, color = "blue")
+    plt.plot(middle_window_extrapolate_expand, color = "blue")
+    plt.axvline(len(waves_train), color = "orange")
+    plt.axvline(len(waves), color = "orange")
+    plt.xticks(datetimes_ix_filter, datetimes_filter)
+    plt.close()

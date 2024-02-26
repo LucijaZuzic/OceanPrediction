@@ -39,30 +39,54 @@ def get_XY(dat, time_steps, len_skip = -1, len_output = -1):
     X = np.array(X)
     Y = np.array(Y)
     return X, Y
+
+def get_X(dat, time_steps, len_skip = -1, len_output = -1):
+    X = []
+    if len_skip == -1:
+        len_skip = time_steps
+    if len_output == -1:
+        len_output = time_steps
+    for i in range(0, len(dat), len_skip):
+        x_vals = dat[i:min(i + time_steps, len(dat))]
+        if len(x_vals) == time_steps:
+            X.append(np.array(x_vals))
+    X = np.array(X)
+    return X
   
-def custom_activation(x): 
-    return K.abs(x)  
+def custom_activation_abs(x):
+    return K.abs(x)
+
+def custom_activation_amplitude(x):
+    return K.relu(K.abs(x), max_value = 0.1) + 0.05
+
+def custom_activation_middle(x):
+    return K.relu(K.abs(x), max_value = 0.1)
+
+def add_custom():
+    get_custom_objects().update({'custom_activation_abs': Activation(custom_activation_abs)})
+    get_custom_objects().update({'custom_activation_amplitude': Activation(custom_activation_amplitude)})
+    get_custom_objects().update({'custom_activation_middle': Activation(custom_activation_middle)})
 
 def create_RNN(hidden_units, dense_units, input_shape, act_layer = "linear"):
     model = Sequential()
-    get_custom_objects().update({'custom_activation': Activation(custom_activation)})
-    model.add(SimpleRNN(hidden_units, input_shape = input_shape, activation = act_layer))
+    add_custom()
+    model.add(SimpleRNN(hidden_units, input_shape = input_shape, activation = "linear"))
     model.add(Dense(units = dense_units, activation = act_layer))
     model.compile(loss = 'mean_squared_error', optimizer = 'adam')
     return model
 
 def create_GRU(hidden_units, dense_units, input_shape, act_layer = "linear"):
     model = Sequential()
-    get_custom_objects().update({'custom_activation': Activation(custom_activation)})
-    model.add(GRU(hidden_units, input_shape = input_shape, activation = act_layer))
+    add_custom()
+    model.add(GRU(hidden_units, input_shape = input_shape, activation = "linear"))
     model.add(Dense(units = dense_units, activation = act_layer))
     model.compile(loss = 'mean_squared_error', optimizer = 'adam')
     return model
 
 def create_LSTM(hidden_units, dense_units, input_shape, act_layer = "linear"):
     model = Sequential()
-    get_custom_objects().update({'custom_activation': Activation(custom_activation)})
-    model.add(LSTM(hidden_units, input_shape = input_shape, activation = act_layer))
+    add_custom()
+    model.add(LSTM(hidden_units, input_shape = input_shape, activation = "linear"))
     model.add(Dense(units = dense_units, activation = act_layer))
     model.compile(loss = 'mean_squared_error', optimizer = 'adam')
     return model

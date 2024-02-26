@@ -57,13 +57,13 @@ for filename in os.listdir("processed"):
     for model_name in models: 
             
         if model_name == "RNN": 
-            demo_model_amplitudes = create_RNN(hidden, ws_amplitude, (ws_amplitude, num_props), act_layer = "custom_activation") 
+            demo_model_amplitudes = create_RNN(hidden, ws_amplitude, (ws_amplitude, num_props), act_layer = "custom_activation_abs") 
 
         if model_name == "GRU": 
-            demo_model_amplitudes = create_GRU(hidden, ws_amplitude, (ws_amplitude, num_props), act_layer = "custom_activation") 
+            demo_model_amplitudes = create_GRU(hidden, ws_amplitude, (ws_amplitude, num_props), act_layer = "custom_activation_abs") 
 
         if model_name == "LSTM": 
-            demo_model_amplitudes = create_LSTM(hidden, ws_amplitude, (ws_amplitude, num_props), act_layer = "custom_activation") 
+            demo_model_amplitudes = create_LSTM(hidden, ws_amplitude, (ws_amplitude, num_props), act_layer = "custom_activation_abs") 
             
         history_model_amplitudes = demo_model_amplitudes.fit(x_amplitudes, y_amplitudes, verbose = 1) 
  

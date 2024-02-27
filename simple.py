@@ -67,7 +67,7 @@ for filename in os.listdir("processed"):
     amplitudes_window_extrapolate = [np.average(amplitudes_extrapolate[i:i+ws]) for i in range(0, len(waves) + new_delta.days, ws)]
     amplitudes_window_predicted_all = amplitudes_window_extrapolate[:len(waves) // ws + 1] 
   
-    poly_middle = [0.0036 / 365, min(middle_train)]
+    poly_middle = [0.0036 / 365, np.min(middle_train)]
     middle_extrapolate = [np.sum([poly_middle[ix] * x ** (deg_middle - ix) for ix in range(len(poly_middle))]) for x in range(len(waves) + new_delta.days)]
     middle_predicted_all = middle_extrapolate[:len(waves)] 
  

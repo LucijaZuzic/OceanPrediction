@@ -56,6 +56,9 @@ def get_X(dat, time_steps, len_skip = -1, len_output = -1):
 def custom_activation_abs(x):
     return K.abs(x)
 
+def custom_activation_waves(x):
+    return K.relu(x, max_value = 0.6, threshold = -0.6)  
+
 def custom_activation_amplitude(x):
     return K.relu(K.abs(x), max_value = 0.1) + 0.05
 
@@ -64,6 +67,7 @@ def custom_activation_middle(x):
 
 def add_custom():
     get_custom_objects().update({'custom_activation_abs': Activation(custom_activation_abs)})
+    get_custom_objects().update({'custom_activation_waves': Activation(custom_activation_waves)})
     get_custom_objects().update({'custom_activation_amplitude': Activation(custom_activation_amplitude)})
     get_custom_objects().update({'custom_activation_middle': Activation(custom_activation_middle)})
 

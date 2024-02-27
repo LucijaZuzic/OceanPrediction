@@ -88,7 +88,6 @@ for filename in os.listdir("processed"):
     #poly_amplitudes_window = np.polyfit(range(len(amplitudes_window_train)), amplitudes_window_train, deg_amplitudes)
     poly_amplitudes_window = [0, np.min(amplitudes_window_train)]
     amplitudes_window_extrapolate = [np.sum([poly_amplitudes_window[ix] * x ** (deg_amplitudes - ix) for ix in range(len(poly_amplitudes_window))]) for x in range((len(waves) + new_delta.days) // ws + 1)]
-    amplitudes_window_extrapolate = [np.average(amplitudes_extrapolate[i:i+ws]) for i in range(0, len(waves) + new_delta.days, ws)]
     amplitudes_window_predicted_all = amplitudes_window_extrapolate[:len(waves) // ws + 1]
     amplitudes_window_predicted_train = amplitudes_window_predicted_all[:len(amplitudes_window_train)]
     amplitudes_window_predicted_test = amplitudes_window_predicted_all[len(amplitudes_window_train):]

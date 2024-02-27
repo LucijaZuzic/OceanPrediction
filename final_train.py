@@ -1,29 +1,56 @@
 import pandas as pd
 import numpy as np
-import os  
+import os
+import math
 from sklearn.metrics import mean_squared_error
-import math 
-from utilities import get_XY, create_GRU, create_LSTM, create_RNN, print_predictions
+from datetime import datetime, timedelta
+from utilities import get_XY, get_X, create_GRU, create_LSTM, create_RNN, print_predictions, print_extrapolated
 
 num_props = 1
 
-for filename_no_csv in os.listdir("train_net"):  
+model_list = ["LSTM", "RNN", "GRU"] 
 
-    file_data = pd.read_csv("processed/" + filename_no_csv + ".csv", index_col = False, sep = ";")  
-    wave_heights = list(file_data["sla"]) 
-    range_val = max(wave_heights) - min(wave_heights)
+for filename in os.listdir("train_net"):
 
-    for model_name in os.listdir("train_net/" + filename_no_csv + "/predictions/test"):
+    file_data = pd.read_csv("processed/" + filename + ".csv", index_col = False, sep = ";")
 
+    filename_no_csv = filename.replace(".csv", "")
+     
+    wave_heights = list(file_data["sla"])
+    
+    range_val = max(wave_heights) - min(wave_heights) 
+
+    datetimes = list(file_data["date"])
+
+    datetimes_value = [datetime.strptime(val, "%d.%m.%Y.") for val in datetimes]
+
+    last_datetime = datetime(year = 2023, month = 8, day = 31)
+
+    new_delta = last_datetime - datetimes_value[-1]
+
+    datetimes_value_new = [datetime.strptime(val, "%d.%m.%Y.") for val in datetimes]
+    datetimes_value_added = []
+
+    while datetimes_value_new[-1] != last_datetime: 
+        datetimes_value_new.append(datetimes_value_new[-1] + timedelta(days = 1))
+        datetimes_value_added.append(datetimes_value_new[-1])
+    
+    datetimes_value_added_string = [datetime.strftime(val, "%d.%m.%Y.") for val in datetimes_value_added]
+ 
+    for model_name in model_list:
+  
         if not os.path.isdir("final_train_net/" + filename_no_csv + "/models/" + model_name):
             os.makedirs("final_train_net/" + filename_no_csv + "/models/" + model_name)
 
         if not os.path.isdir("final_train_net/" + filename_no_csv + "/predictions/train/" + model_name):
             os.makedirs("final_train_net/" + filename_no_csv + "/predictions/train/" + model_name)
-
+ 
         if not os.path.isdir("final_train_net/" + filename_no_csv + "/predictions/test/" + model_name):
             os.makedirs("final_train_net/" + filename_no_csv + "/predictions/test/" + model_name)
-
+ 
+        if not os.path.isdir("final_train_net/" + filename_no_csv + "/predictions/extrapolate/" + model_name):
+            os.makedirs("final_train_net/" + filename_no_csv + "/predictions/extrapolate/" + model_name)
+        
         ws_array = []
         hidden_array = []
         val_RMSE = []
@@ -40,29 +67,69 @@ for filename_no_csv in os.listdir("train_net"):
 
         hidden = hidden_array[val_RMSE.index(min(val_RMSE))]
         ws = ws_array[val_RMSE.index(min(val_RMSE))]
+  
+        x_wave_heights, y_wave_heights = get_XY(wave_heights, ws)
+        x_wave_heights_predict = get_X(wave_heights, ws)
+ 
+        ix_val_test = int(np.floor(len(x_wave_heights_predict) * 0.7))
 
-        x_wave_heights, y_wave_heights = get_XY(wave_heights, ws, num_props)
+        xtrain = np.array(x_wave_heights[:ix_val_test])
+        ytrain = np.array(y_wave_heights[:ix_val_test]) 
 
-        xtrain = np.array(x_wave_heights[:int(np.floor(len(x_wave_heights) * 0.7))]) 
-        xtest = np.array(x_wave_heights[int(np.floor(len(x_wave_heights) * 0.7)):])
+        xtest = np.array(x_wave_heights[ix_val_test:])
+        ytest = np.array(y_wave_heights[ix_val_test:])
 
-        ytrain = np.array(y_wave_heights[:int(np.floor(len(y_wave_heights) * 0.7))]) 
-        ytest = np.array(y_wave_heights[int(np.floor(len(y_wave_heights) * 0.7)):])  
+        ytrain_flat = wave_heights[len(xtrain[0]):(len(xtrain) + 1) * len(xtrain[0])]
+        ytest_flat = wave_heights[(len(xtrain) + 1) * len(xtrain[0]):]
+             
+        if model_name == "RNN":
+            demo_model = create_RNN(hidden, ws, (ws, num_props)) 
 
-        if model_name == "RNN": 
-            demo_model = create_RNN(hidden, num_props, (ws, num_props))  
+        if model_name == "GRU": 
+            demo_model = create_GRU(hidden, ws, (ws, num_props)) 
 
-        if model_name == "LSTM":
-            demo_model = create_LSTM(hidden, num_props, (ws, num_props))  
-
-        if model_name == "GRU":
-            demo_model = create_GRU(hidden, num_props, (ws, num_props))  
-        
+        if model_name == "LSTM": 
+            demo_model = create_LSTM(hidden, ws, (ws, num_props)) 
+ 
         demo_model.save("final_train_net/" + filename_no_csv + "/models/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + ".h5") 
-        history_model = demo_model.fit(xtrain, ytrain, verbose = 1)  
+        history_model = demo_model.fit(xtrain, ytrain, verbose = 0, epochs = 70)  
 
-        predict_train = demo_model.predict(xtrain)  
-        predict_test = demo_model.predict(xtest) 
+        predict_all = demo_model.predict(x_wave_heights_predict)
 
-        print_predictions(ytrain, predict_train, "final_train_net/" + filename_no_csv + "/predictions/train/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + "_train.csv") 
-        print_predictions(ytest, predict_test, "final_train_net/" + filename_no_csv + "/predictions/test/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + "_test.csv")
+        all_predicted_merged = []
+        predict_train_flat = [] 
+        predict_test_flat = []
+        predict_extrapolate_flat = []
+        for i in range(len(predict_all)):
+            for j in range(len(predict_all[i])): 
+                all_predicted_merged.append(predict_all[i][j])
+                ix = i * len(predict_all[0]) + j
+                if ix < len(ytrain_flat):
+                    predict_train_flat.append(predict_all[i][j])
+                    continue 
+                if ix < len(ytrain_flat) + len(ytest_flat):
+                    predict_test_flat.append(predict_all[i][j])
+                    continue
+                predict_extrapolate_flat.append(predict_all[i][j])
+                                                
+        while len(all_predicted_merged) < len(wave_heights) + new_delta.days - ws:
+            new_predict = demo_model.predict(get_X(all_predicted_merged[-ws:], ws)) 
+            for j in range(len(new_predict[0])): 
+                all_predicted_merged.append(new_predict[0][j])
+                predict_extrapolate_flat.append(new_predict[0][j])
+        
+        datetimes_value_new_longer = [datetime.strptime(val, "%d.%m.%Y.") for val in datetimes]
+        datetimes_value_added_longer = []
+
+        for ix_ex in range(len(predict_extrapolate_flat)): 
+            datetimes_value_new_longer.append(datetimes_value_new_longer[-1] + timedelta(days = 1))
+            datetimes_value_added_longer.append(datetimes_value_new_longer[-1])
+        
+        datetimes_value_added_string_longer = [datetime.strftime(val, "%d.%m.%Y.") for val in datetimes_value_added_longer]
+ 
+        print_predictions(ytrain_flat, predict_train_flat, "final_train_net/" + filename_no_csv + "/predictions/train/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + "_train.csv") 
+        print_predictions(ytest_flat, predict_test_flat, "final_train_net/" + filename_no_csv + "/predictions/test/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + "_test.csv")
+        print_extrapolated(datetimes_value_added_string, predict_extrapolate_flat, "final_train_net/" + filename_no_csv + "/predictions/extrapolate/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + "_extrapolate.csv")
+        print_extrapolated(datetimes_value_added_string_longer, predict_extrapolate_flat, "final_train_net/" + filename_no_csv + "/predictions/extrapolate/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + "_extrapolate_longer.csv")
+
+    break

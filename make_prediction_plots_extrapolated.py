@@ -10,19 +10,18 @@ def print_error(trainY, train_predict, title, range_val):
     return train_RMSE / range_val
  
 def plot_result(trainY, train_predict, title, datetimes, filename):
-    rows = len(trainY)
     plt.figure(figsize = (15, 6), dpi = 80)
     plt.rcParams.update({'font.size': 22})
-    plt.plot(range(rows), trainY, color = "b") 
-    plt.plot(range(rows), train_predict, color = "orange") 
+    plt.plot(range(len(trainY)), trainY, color = "b") 
+    plt.plot(range(len(train_predict)), train_predict, color = "orange") 
     datetimes_new = datetimes[-len(train_predict):]
     datetimes_ix_filter = [i for i in range(0, len(datetimes_new), int(len(datetimes_new) // 5))]
     datetimes_filter = [datetimes_new[i] for i in datetimes_ix_filter]
     plt.xticks(datetimes_ix_filter, datetimes_filter) 
-    plt.legend(['Stvarno', 'Predviđeno'], loc = "upper left", ncol = 2)
+    plt.legend(['Stvarno', 'Modelirano'], loc = "upper left", ncol = 2)
     plt.xlabel('Datum')
     plt.ylabel("Visina površine mora (m)")
-    plt.title(title) 
+    plt.title(title + "\nTreniranje")
     plt.savefig(filename, bbox_inches = "tight")
     plt.close()
 
@@ -44,9 +43,10 @@ for filename_no_csv in os.listdir("extrapolate"):
              
             ytrain = list(train_data["actual"])
             predict_train = list(train_data["predicted"])
-
+             
             ws = filename.replace(".csv", "").split("_")[-4] 
             hidden = filename.replace(".csv", "").split("_")[-2] 
                 
             plot_result(ytrain, predict_train, "Visina površine mora predviđena " + model_name + " modelom (veličina prozora " + str(ws) + ", " + str(hidden) + " skrivenih slojeva)", datetimes, "extrapolate/" + filename_no_csv + "/plots/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + ".png")
+
             train_RMSE = print_error(ytrain, predict_train, "Visina površine mora predviđena " + model_name + " modelom (veličina prozora " + str(ws) + ", " + str(hidden) + " skrivenih slojeva)", range_val)

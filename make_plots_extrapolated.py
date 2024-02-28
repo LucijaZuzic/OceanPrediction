@@ -41,5 +41,20 @@ for filename_no_csv in os.listdir("extrapolate"):
             ws = int(filename.replace(".csv", "").split("_")[-4])
             hidden = filename.replace(".csv", "").split("_")[-2] 
                 
-            plot_predictions(predict_extrapolate, dates_strings, "Visina površine mora predviđena " + model_name + " modelom (veličina prozora " + str(ws) + ", " + str(hidden) + " skrivenih slojeva)", "extrapolate/" + filename_no_csv + "/extrapolate_plots/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + "_extrapolate.png")
-            plot_predictions(predict_extrapolate_longer, dates_strings_longer, "Visina površine mora predviđena " + model_name + " modelom (veličina prozora " + str(ws) + ", " + str(hidden) + " skrivenih slojeva)", "extrapolate/" + filename_no_csv + "/extrapolate_plots/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + "_extrapolate_longer.png")
+            is_a_nan = False
+
+            for val in predict_extrapolate:
+                if str(val) == 'nan':
+                    is_a_nan = True
+                    break
+
+            for val in predict_extrapolate_longer:
+                if str(val) == 'nan':
+                    is_a_nan = True
+                    break
+                
+            if is_a_nan:
+                print(filename_no_csv, ws, hidden, model_name, "error")
+            else:
+                plot_predictions(predict_extrapolate, dates_strings, "Visina površine mora predviđena " + model_name + " modelom (veličina prozora " + str(ws) + ", " + str(hidden) + " skrivenih slojeva)", "extrapolate/" + filename_no_csv + "/extrapolate_plots/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + "_extrapolate.png")
+                plot_predictions(predict_extrapolate_longer, dates_strings_longer, "Visina površine mora predviđena " + model_name + " modelom (veličina prozora " + str(ws) + ", " + str(hidden) + " skrivenih slojeva)", "extrapolate/" + filename_no_csv + "/extrapolate_plots/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + "_extrapolate_longer.png")

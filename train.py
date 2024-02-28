@@ -1,9 +1,8 @@
 import pandas as pd
 import numpy as np
 import os
-import math
-from sklearn.metrics import mean_squared_error
 from datetime import datetime, timedelta
+from keras.callbacks import EarlyStopping
 from utilities import get_XY, get_X, create_GRU, create_LSTM, create_RNN, print_predictions, print_extrapolated
 
 num_props = 1
@@ -12,14 +11,10 @@ ws_range = [365, 365 * 2, 365 * 3, 365 * 5, 365 * 7]
 
 hidden_range = range(120, 220, 20)
 
-ws_range = [365 * 2]
-
-hidden_range = [200]
-
 model_list = ["LSTM", "RNN", "GRU"] 
 
 for filename in os.listdir("processed"):
-
+    
     file_data = pd.read_csv("processed/" + filename, index_col = False, sep = ";")
 
     filename_no_csv = filename.replace(".csv", "")
@@ -83,7 +78,9 @@ for filename in os.listdir("processed"):
             yval_flat = wave_heights[(len(xtrain) + 1) * len(xtrain[0]):(len(xtrain) + len(xval) + 1) * len(xtrain[0])]
             ytest_flat = wave_heights[(len(xtrain) + len(xval) + 1) * len(xtrain[0]):]
             
-            for hidden in hidden_range: 
+            for hidden in hidden_range:
+
+                print(hidden) 
  
                 if model_name == "RNN":
                     demo_model = create_RNN(hidden, ws, (ws, num_props)) 
@@ -93,10 +90,10 @@ for filename in os.listdir("processed"):
 
                 if model_name == "LSTM": 
                     demo_model = create_LSTM(hidden, ws, (ws, num_props)) 
-
+ 
                 demo_model.save("train_net/" + filename_no_csv + "/models/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + ".h5") 
-                history_model = demo_model.fit(xtrain, ytrain, verbose = 0, epochs = 70)  
-
+                callback = [EarlyStopping(monitor = 'loss', mode= 'min', patience = 3, min_delta = 10 ** -4)]
+                history_model = demo_model.fit(xtrain, ytrain, verbose = 0, epochs = 70, batch_size = 600, callbacks = callback)
                 predict_all = demo_model.predict(x_wave_heights_predict)
 
                 all_predicted_merged = []
@@ -139,5 +136,3 @@ for filename in os.listdir("processed"):
                 print_predictions(ytest_flat, predict_test_flat, "train_net/" + filename_no_csv + "/predictions/test/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + "_test.csv")
                 print_extrapolated(datetimes_value_added_string, predict_extrapolate_flat, "train_net/" + filename_no_csv + "/predictions/extrapolate/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + "_extrapolate.csv")
                 print_extrapolated(datetimes_value_added_string_longer, predict_extrapolate_flat, "train_net/" + filename_no_csv + "/predictions/extrapolate/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + "_extrapolate_longer.csv")
-
-    break

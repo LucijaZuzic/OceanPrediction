@@ -46,7 +46,17 @@ for filename_no_csv in os.listdir("extrapolate"):
              
             ws = filename.replace(".csv", "").split("_")[-4] 
             hidden = filename.replace(".csv", "").split("_")[-2] 
-                
-            plot_result(ytrain, predict_train, "Visina površine mora predviđena " + model_name + " modelom (veličina prozora " + str(ws) + ", " + str(hidden) + " skrivenih slojeva)", datetimes, "extrapolate/" + filename_no_csv + "/plots/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + ".png")
+            
+            is_a_nan = False
 
-            train_RMSE = print_error(ytrain, predict_train, "Visina površine mora predviđena " + model_name + " modelom (veličina prozora " + str(ws) + ", " + str(hidden) + " skrivenih slojeva)", range_val)
+            for val in predict_train:
+                if str(val) == 'nan':
+                    is_a_nan = True
+                    break
+                
+            if is_a_nan:
+                print(filename_no_csv, ws, hidden, model_name, "error")
+            else:
+                plot_result(ytrain, predict_train, "Visina površine mora predviđena " + model_name + " modelom (veličina prozora " + str(ws) + ", " + str(hidden) + " skrivenih slojeva)", datetimes, "extrapolate/" + filename_no_csv + "/plots/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + ".png")
+
+                train_RMSE = print_error(ytrain, predict_train, "Visina površine mora predviđena " + model_name + " modelom (veličina prozora " + str(ws) + ", " + str(hidden) + " skrivenih slojeva)", range_val)

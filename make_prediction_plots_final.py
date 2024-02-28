@@ -161,7 +161,32 @@ for filename_no_csv in os.listdir("final_train_net"):
             dates_strings_longer = list(extrapolate_data_longer["dates"])
             predict_extrapolate_longer = list(extrapolate_data_longer["predicted"])
             
-            plot_result(predict_extrapolate, dates_strings, ytrain, ytest, predict_train, predict_test, "Visina površine mora predviđena " + model_name + " modelom (veličina prozora " + str(ws) + ", " + str(hidden) + " skrivenih slojeva)", datetimes, "final_train_net/" + filename_no_csv + "/plots/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + ".png")
-            plot_result(predict_extrapolate_longer, dates_strings_longer, ytrain, ytest, predict_train, predict_test, "Visina površine mora predviđena " + model_name + " modelom (veličina prozora " + str(ws) + ", " + str(hidden) + " skrivenih slojeva)", datetimes, "final_train_net/" + filename_no_csv + "/plots/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + "_longer.png")
+            is_a_nan = False
 
-            train_RMSE, test_RMSE = print_error(ytrain, ytest, predict_train, predict_test, "Visina površine mora predviđena " + model_name + " modelom (veličina prozora " + str(ws) + ", " + str(hidden) + " skrivenih slojeva)", range_val)
+            for val in predict_train:
+                if str(val) == 'nan':
+                    is_a_nan = True
+                    break 
+                 
+            for val in predict_test:
+                if str(val) == 'nan':
+                    is_a_nan = True
+                    break
+            
+            for val in predict_extrapolate:
+                if str(val) == 'nan':
+                    is_a_nan = True
+                    break
+
+            for val in predict_extrapolate_longer:
+                if str(val) == 'nan':
+                    is_a_nan = True
+                    break
+                
+            if is_a_nan:
+                print(filename_no_csv, ws, hidden, model_name, "error")
+            else:
+                plot_result(predict_extrapolate, dates_strings, ytrain, ytest, predict_train, predict_test, "Visina površine mora predviđena " + model_name + " modelom (veličina prozora " + str(ws) + ", " + str(hidden) + " skrivenih slojeva)", datetimes, "final_train_net/" + filename_no_csv + "/plots/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + ".png")
+                plot_result(predict_extrapolate_longer, dates_strings_longer, ytrain, ytest, predict_train, predict_test, "Visina površine mora predviđena " + model_name + " modelom (veličina prozora " + str(ws) + ", " + str(hidden) + " skrivenih slojeva)", datetimes, "final_train_net/" + filename_no_csv + "/plots/" + model_name + "/" + filename_no_csv + "_" + model_name + "_ws_" + str(ws) + "_hidden_" + str(hidden) + "_longer.png")
+
+                train_RMSE, test_RMSE = print_error(ytrain, ytest, predict_train, predict_test, "Visina površine mora predviđena " + model_name + " modelom (veličina prozora " + str(ws) + ", " + str(hidden) + " skrivenih slojeva)", range_val)

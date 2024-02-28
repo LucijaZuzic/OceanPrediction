@@ -1,14 +1,7 @@
 import pickle
-from datetime import datetime
-import os
-import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense, SimpleRNN, LSTM, GRU
-from keras.layers import Activation
-from keras import backend as K
-from keras.utils.generic_utils import get_custom_objects
 
 def print_extrapolated(dates, predicted, name_file):
     
@@ -61,7 +54,7 @@ def get_X(dat, time_steps, len_skip = -1):
             X.append(np.array(x_vals))
     X = np.array(X)
     return X
-    
+
 def create_RNN(hidden_units, dense_units, input_shape, act_layer = "linear"):
     model = Sequential() 
     model.add(SimpleRNN(hidden_units, input_shape = input_shape, activation = "linear"))

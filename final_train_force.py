@@ -60,6 +60,11 @@ for filename in os.listdir("train_net"):
             
             val_data = pd.read_csv("train_net/" + filename_no_csv + "/predictions/validate/" + model_name + "/" + filename, index_col = False, sep = ";")  
             
+            ws = int(filename.replace(".csv", "").split("_")[-4])
+
+            if ws > 2 * 365:
+                continue
+
             is_a_nan = False
             for val in val_data["predicted"]:
                 if str(val) == 'nan':
@@ -72,7 +77,7 @@ for filename in os.listdir("train_net"):
                 val_RMSE.append(math.sqrt(mean_squared_error(list(val_data["actual"]), list(val_data["predicted"]))) / range_val)
             
             hidden_array.append(int(filename.replace(".csv", "").split("_")[-2]))
-            ws_array.append(int(filename.replace(".csv", "").split("_")[-4]))
+            ws_array.append(ws)
  
         print(filename_no_csv, model_name, min(val_RMSE), hidden_array[val_RMSE.index(min(val_RMSE))], ws_array[val_RMSE.index(min(val_RMSE))])
         

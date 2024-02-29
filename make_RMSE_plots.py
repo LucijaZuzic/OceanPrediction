@@ -53,7 +53,28 @@ for filename_no_csv in os.listdir("train_net"):
             yval = list(val_data["actual"])
             predict_val = list(val_data["predicted"])
 
-            train_RMSE[((model_name, ws, hidden))], val_RMSE[((model_name, ws, hidden))], test_RMSE[((model_name, ws, hidden))] = print_error(ytrain, yval, ytest, predict_train, predict_val, predict_test, "Visina površine mora predviđena " + model_name + " modelom (veličina prozora " + str(ws) + ", " + str(hidden) + " skrivenih slojeva)", max(wave_heights) - min(wave_heights))
+            is_a_nan = False
+
+            for val in predict_train:
+                if str(val) == 'nan':
+                    is_a_nan = True
+                    break
+                 
+            for val in predict_val:
+                if str(val) == 'nan':
+                    is_a_nan = True
+                    break
+                 
+            for val in predict_test:
+                if str(val) == 'nan':
+                    is_a_nan = True
+                    break
+
+            if is_a_nan:
+                print(filename_no_csv, ws, hidden, model_name, "error")
+                train_RMSE[((model_name, ws, hidden))], val_RMSE[((model_name, ws, hidden))], test_RMSE[((model_name, ws, hidden))] = 1000000, 1000000, 1000000
+            else:
+                train_RMSE[((model_name, ws, hidden))], val_RMSE[((model_name, ws, hidden))], test_RMSE[((model_name, ws, hidden))] = print_error(ytrain, yval, ytest, predict_train, predict_val, predict_test, "Visina površine mora predviđena " + model_name + " modelom (veličina prozora " + str(ws) + ", " + str(hidden) + " skrivenih slojeva)", max(wave_heights) - min(wave_heights))
 
     ws_range = sorted(list(ws_range))
     hidden_range = sorted(list(hidden_range))

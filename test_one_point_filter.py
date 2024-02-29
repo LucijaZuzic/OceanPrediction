@@ -9,7 +9,7 @@ num_props = 1
 dict_for_table = dict()
 model_names = set()
 
-filename_no_csv = "-86.625_30.375"
+filename_no_csv = "18.125_42.375"
 
 file_data = pd.read_csv("processed/" + filename_no_csv + ".csv", index_col = False, sep = ";")  
 wave_heights = list(file_data["sla"]) 
@@ -43,7 +43,7 @@ for model_name in os.listdir("train_net/" + filename_no_csv + "/predictions/test
         if is_a_nan:
             val_RMSE.append(1000000)
         else: 
-            val_RMSE.append(np.round(math.sqrt(mean_squared_error(list(val_data["actual"]), list(val_data["predicted"]))) / range_val * 1000, 3))
+            val_RMSE.append(np.round(math.sqrt(mean_squared_error(list(val_data["actual"]), list(val_data["predicted"]))) / range_val * 100, 3))
   
         if os.path.isfile("final_train_net/" + filename_no_csv + "/predictions/test/" + model_name + "/" + filename.replace("validate", "test")):
             test_data = pd.read_csv("final_train_net/" + filename_no_csv + "/predictions/test/" + model_name + "/" + filename.replace("validate", "test"), index_col = False, sep = ";")  
@@ -55,9 +55,9 @@ for model_name in os.listdir("train_net/" + filename_no_csv + "/predictions/test
                     break
 
             if is_a_nan:
-                test_RMSE = 1000000
+                test_RMSE.append(1000000)
             else: 
-                test_RMSE.append(np.round(math.sqrt(mean_squared_error(list(test_data["actual"]), list(test_data["predicted"]))) / range_val * 1000, 3)) 
+                test_RMSE.append(np.round(math.sqrt(mean_squared_error(list(test_data["actual"]), list(test_data["predicted"]))) / range_val * 100, 3))
         else:
             test_RMSE.append(0) 
  

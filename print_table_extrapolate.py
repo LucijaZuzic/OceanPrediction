@@ -64,7 +64,7 @@ for filename_no_csv in os.listdir("train_net"):
         else: 
             test_RMSE = math.sqrt(mean_squared_error(list(test_data["actual"]), list(test_data["predicted"]))) / range_val
            
-        dict_for_table[(filename_no_csv, model_name)] = (ws, hidden, np.round(min(val_RMSE) * 1000, 3), np.round(test_RMSE * 1000, 3)) 
+        dict_for_table[(filename_no_csv, model_name)] = (ws, hidden, np.round(min(val_RMSE) * 100, 3), np.round(test_RMSE * 100, 3)) 
 
         model_names.add(model_name)
   
@@ -90,7 +90,7 @@ for model_name in model_names:
         long, lat = loc
         entry = (str(long) + "_" + str(lat), model_name)
         ws, hidden, val_RMSE, test_RMSE = dict_for_table[entry]
-        print(entry[0].replace("_", " & ") + " & " + str(hidden) + " & " + str(val_RMSE) + " & " + str(test_RMSE) + " & " + str(np.round(test_RMSE - val_RMSE, 3)) + " & " + str(np.round(abs(test_RMSE - val_RMSE), 3)) + " \\\\ \\hline")
+        print(entry[0].replace("_", " & ") + " & " + str(ws) + " & " + str(hidden) + " & " + str(val_RMSE) + " & " + str(test_RMSE) + " & " + str(np.round(test_RMSE - val_RMSE, 3)) + " & " + str(np.round(abs(test_RMSE - val_RMSE), 3)) + " \\\\ \\hline")
         val_RMSE_arr.append(val_RMSE)
         test_RMSE_arr.append(test_RMSE)
         diff_arr.append(np.round(test_RMSE - val_RMSE, 3))

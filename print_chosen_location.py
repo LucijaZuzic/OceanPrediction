@@ -73,7 +73,7 @@ for filename_no_csv in os.listdir("train_net"):
         else: 
             test_RMSE = math.sqrt(mean_squared_error(list(test_data["actual"]), list(test_data["predicted"]))) / range_val
            
-        dict_for_table[(filename_no_csv, model_name)] = (ws, hidden, np.round(min(val_RMSE) * 1000, 3), np.round(test_RMSE * 1000, 3)) 
+        dict_for_table[(filename_no_csv, model_name)] = (ws, hidden, np.round(min(val_RMSE) * 100, 3), np.round(test_RMSE * 100, 3)) 
    
         model_names.add(model_name)
 
